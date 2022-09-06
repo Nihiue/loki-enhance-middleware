@@ -34,7 +34,7 @@ module.exports = {
         const result = await bodyHandler(raw);
 
         if (!result) {
-          throw new Eeror('Empty result');
+          throw new Error('Empty result');
         }
 
         const resp = await axios.post(`${config.loki_host}/loki/api/v1/push`, result, {
