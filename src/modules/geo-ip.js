@@ -22,12 +22,14 @@ async function prepareDB() {
     lookupCity = await maxmind.open(cityFile, option);
     lookupASN = await maxmind.open(asnFile, option);
   } catch (e) {
-    console.log([
-      '*** Cannot load maxmind db files: cityFile, asnFile. ',
+    logger.fatal({
       cityFile,
       asnFile,
-      '*** Download from https://www.maxmind.com/en/geolite2/signup'
-    ].join('\n'));
+      downloadFrom: 'https://www.maxmind.com/en/geolite2/signup'
+    }, 'Missing maxmind DB files');
+
+    throw new Error('Maxmind DB not ready');
+
   }
 }
 
@@ -35,7 +37,7 @@ const geoInfoCache = lru(1000, ttl = 0);
 
 function getGeoInfo(ip) {
   if (!lookupCity || !lookupASN) {
-    throw new Error('db_not_init');
+    throw new Error('maxmind: db not ready');
   }
 
   if (!ip) {
@@ -81,8 +83,8 @@ function getGeoInfo(ip) {
 
 const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
-async function handler(data) {
-  await prepareDB();
+async function handler(data, logger) {
+  await prepareDB(logger);
   data.streams.forEach(function(stream) {
     stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);

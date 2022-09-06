@@ -3,10 +3,16 @@ const path = require('path');
 const { startServer } = require('./server.js');
 const config  = require('./config.js');
 
+const logger = require('pino')({
+  name: 'master'
+});
+
 if (!isMainThread) {
-  console.log('master exit');
-  return;
+  logger.fatal('master must run as MainThread');
+  process.exit(1);
 }
+
+logger.info(config, 'Start with config');
 
 const pendingJobs = new Map();
 
@@ -21,7 +27,11 @@ function workerMsgHandler({ type, id, data }) {
 }
 
 for (let i = 0; i < config.worker_count; i += 1) {
-  const wkr = new Worker(path.join(__dirname, 'worker.js'));
+  const wkr = new Worker(path.join(__dirname, 'worker.js'), {
+    workerData: {
+      workerId: i
+    }
+  });
   wkr.on('message', workerMsgHandler);
   workers.push(wkr);
 }
@@ -34,6 +44,10 @@ function bodyHandler(raw) {
     throw new Error('input not Buffer');
   }
   const id = (jobIdCounter += 1);
+
+  if (id % 10 === 0) {
+    logger.info({ jobId: id, pendingCount: pendingJobs.size }, 'On new job');
+  }
 
   return new Promise(function(resolve, reject) {
     pendingJobs.set(id, resolve);

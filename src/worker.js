@@ -4,12 +4,16 @@ const path = require('path');
 const geoIp = require('./modules/geo-ip.js');
 const config = require('./config.js');
 
-const { isMainThread, parentPort } = require('worker_threads');
+const { isMainThread, parentPort, workerData } = require('worker_threads');
 
 if (isMainThread) {
-  console.log('worker exit');
-  return;
+  logger.fatal('worker is MainThread');
+  process.exit(1);
 }
+
+const logger = require('pino')({
+  name: `worker-${workerData.workerId}`
+});
 
 function loadPushRequest() {
   const root = new protobuf.Root();
@@ -36,7 +40,7 @@ async function processLogData(raw) {
   const data = PushRequest.decode(decompressed);
 
   for (let i = 0; i < handlers.length; i += 1) {
-    await handlers[i](data);
+    await handlers[i](data, logger);
   }
 
   const compressed = await snappy.compress(PushRequest.encode(data).finish());
@@ -50,7 +54,7 @@ parentPort.on('message', async function({ data, id, type }) {
     try {
       retData = await processLogData(data);
     } catch (e) {
-      console.log('worker error', e);
+      logger.error(e, 'Error when processLogData');
     }
 
     const msg = {

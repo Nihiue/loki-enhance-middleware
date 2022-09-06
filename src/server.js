@@ -1,6 +1,7 @@
 const axios = require('axios');
 const Koa = require('koa');
 const config = require('./config.js');
+const pino = require('koa-pino-logger')()
 
 function stream2buffer(stream) {
   return new Promise((resolve, reject) => {
@@ -21,6 +22,8 @@ function stream2buffer(stream) {
 module.exports = {
   startServer(bodyHandler) {
     const app = new Koa();
+
+    app.use(pino);
 
     app.use(async (ctx) => {
       if (ctx.method !== 'POST' || ctx.url !== '/loki/api/v1/push') {
@@ -46,7 +49,7 @@ module.exports = {
         ctx.body = resp.data;
         ctx.status = resp.status;
       } catch (e) {
-        console.log('Proxy Error', e.toString());
+        ctx.log.error(e, 'Unable to proxy request');
         if (e.response) {
           ctx.body = e.response.data;
           ctx.status = e.response.status;
@@ -56,8 +59,9 @@ module.exports = {
         }
       }
     });
-
-    console.log(`listen on ${config.listen_port}`);
     app.listen(config.listen_port);
+
+    pino.logger.info(`listen on ${config.listen_port}`);
+
   }
 }
