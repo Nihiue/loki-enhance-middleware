@@ -11,3 +11,4 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 EXPOSE 3100
 ENTRYPOINT node src/index.js
+*.mmdb

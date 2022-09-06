@@ -5,8 +5,17 @@ let lookupCity, lookupASN;
 
 async function prepareDB() {
   if (!lookupCity) {
-    lookupCity = await maxmind.open(path.join(__dirname, '../../mmdb', 'GeoLite2-City.mmdb'));
-    lookupASN = await maxmind.open(path.join(__dirname, '../../mmdb', 'GeoLite2-ASN.mmdb'));
+    const cityFile = path.join(__dirname, '../../mmdb', 'GeoLite2-City.mmdb');
+    const asnFile = path.join(__dirname, '../../mmdb', 'GeoLite2-ASN.mmdb');
+    try {
+      lookupCity = await maxmind.open(cityFile);
+      lookupASN = await maxmind.open(asnFile);
+    } catch (e) {
+      console.log('Cannot load maxmind db files: cityFile, asnFile.');
+      console.log(cityFile, asnFile);
+      console.log(' *** Download from https://www.maxmind.com/en/geolite2/signup ')
+      process.exit(-1);
+    }
   }
 }
 
