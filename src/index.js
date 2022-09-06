@@ -24,10 +24,6 @@ function workerMsgHandler({ type, id, data }) {
     pendingJobs.delete(id);
     return;
   }
-  if (type === 'LOG') {
-    const { from, level, args } = data;
-    logger[level](...args, from);
-  }
 }
 
 for (let i = 0; i < config.worker_count; i += 1) {

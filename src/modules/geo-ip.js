@@ -4,7 +4,7 @@ const lru = require('tiny-lru');
 
 let lookupCity, lookupASN;
 
-async function prepareDB(log) {
+async function prepareDB(logger) {
   if (lookupCity) {
     return;
   }
@@ -22,10 +22,10 @@ async function prepareDB(log) {
     lookupCity = await maxmind.open(cityFile, option);
     lookupASN = await maxmind.open(asnFile, option);
   } catch (e) {
-    log('fatal', {
-      cityFile,
-      asnFile,
-      downloadFrom: 'https://www.maxmind.com/en/geolite2/signup'
+    logger.fatal({
+      city: cityFile,
+      asn: asnFile,
+      source: 'Please download from https://www.maxmind.com/en/geolite2/signup'
     }, 'Missing maxmind DB files');
 
     throw new Error('Maxmind DB not ready');
@@ -83,8 +83,8 @@ function getGeoInfo(ip) {
 
 const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
-async function handler(data, log) {
-  await prepareDB(log);
+async function handler(data, logger) {
+  await prepareDB(logger);
   data.streams.forEach(function(stream) {
     stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);

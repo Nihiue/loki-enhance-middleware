@@ -6,12 +6,15 @@ const config = require('./config.js');
 
 const { isMainThread, parentPort, workerData } = require('worker_threads');
 
-const workerId = workerData ? workerData.workerId : 0;
-
 if (isMainThread) {
   console.log('worker is MainThread');
   process.exit(1);
 }
+
+const workerId = workerData ? workerData.workerId : 0;
+const logger = require('pino')({
+  name: `worker-${workerId}`
+});
 
 function loadPushRequest() {
   const root = new protobuf.Root();
@@ -24,17 +27,6 @@ function loadPushRequest() {
 
 const PushRequest = loadPushRequest();
 const handlers = [];
-
-function log(level, ...args) {
-  parentPort.postMessage({
-    type: 'LOG',
-    data: {
-      from: `worker-${workerId}`,
-      level,
-      args,
-    }
-  });
-}
 
 if (config.enabled_modules.includes('geo-ip')) {
   handlers.push(geoIp.handler);
@@ -49,7 +41,7 @@ async function processLogData(raw) {
   const data = PushRequest.decode(decompressed);
 
   for (let i = 0; i < handlers.length; i += 1) {
-    await handlers[i](data, log);
+    await handlers[i](data, logger);
   }
 
   const compressed = await snappy.compress(PushRequest.encode(data).finish());
@@ -63,7 +55,7 @@ parentPort.on('message', async function({ data, id, type }) {
     try {
       retData = await processLogData(data);
     } catch (e) {
-      log('error', e, 'Error when processLogData');
+      logger.error(e, 'Error when processLogData');
     }
 
     const msg = {
