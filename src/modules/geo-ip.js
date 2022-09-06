@@ -11,10 +11,15 @@ async function prepareDB() {
       lookupCity = await maxmind.open(cityFile);
       lookupASN = await maxmind.open(asnFile);
     } catch (e) {
-      console.log('Cannot load maxmind db files: cityFile, asnFile.');
-      console.log(cityFile, asnFile);
-      console.log(' *** Download from https://www.maxmind.com/en/geolite2/signup ')
-      process.exit(-1);
+      console.log([
+        'Cannot load maxmind db files: cityFile, asnFile. ',
+        cityFile,
+        asnFile,
+        '*** Download from https://www.maxmind.com/en/geolite2/signup'
+      ].join('\n'));
+      setTimeout(() =>{
+        process.exit(-1);
+      }, 3000);
     }
   }
 }
