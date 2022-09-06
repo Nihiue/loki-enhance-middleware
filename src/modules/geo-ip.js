@@ -14,7 +14,7 @@ async function prepareDB(logger) {
 
   const option = {
     cache: {
-      max: 1000
+      max: 100
     }
   };
 
@@ -33,7 +33,7 @@ async function prepareDB(logger) {
   }
 }
 
-const geoInfoCache = lru(1000, ttl = 0);
+const geoInfoCache = lru(2000, ttl = 0);
 
 function getGeoInfo(ip) {
   if (!lookupCity || !lookupASN) {
