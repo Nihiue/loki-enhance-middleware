@@ -6,7 +6,7 @@ MAINTAINER Wanglei<nihiue@gmail.com>
 
 WORKDIR /app
 COPY . .
-npm install
+RUN npm install
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 EXPOSE 3100
