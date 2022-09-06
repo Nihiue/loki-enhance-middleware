@@ -22,6 +22,9 @@ function loadPushRequest() {
   return root.lookupType('logproto.PushRequest');
 }
 
+const PushRequest = loadPushRequest();
+const handlers = [];
+
 function log(level, ...args) {
   parentPort.postMessage({
     type: 'LOG',
@@ -32,9 +35,6 @@ function log(level, ...args) {
     }
   });
 }
-
-const PushRequest = loadPushRequest();
-const handlers = [];
 
 if (config.enabled_modules.includes('geo-ip')) {
   handlers.push(geoIp.handler);
