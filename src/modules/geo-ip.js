@@ -54,8 +54,14 @@ function getGeoInfo(ip) {
   }
   if (main) {
     ret.continent = main.continent && main.continent.names['en'];
+
     ret.city = main.city && main.city.names['en'];
+    ret.city_geoname_id = main.city && main.city.geoname_id;
+
     ret.country = main.country && main.country.names['en'];
+    ret.country_geoname_id = main.country && main.country.geoname_id;
+    ret.country_iso_code = main.country && main.country.iso_code;
+
     ret.latitude = main.location && main.location.latitude;
     ret.longitude = main.location && main.location.longitude;
   }
