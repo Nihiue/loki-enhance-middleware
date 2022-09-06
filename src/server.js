@@ -1,7 +1,15 @@
 const axios = require('axios');
 const Koa = require('koa');
 const config = require('./config.js');
-const pino = require('koa-pino-logger')()
+
+const logger = require('pino')({
+  name: 'server',
+  formatters: {
+    level (label, number) {
+      return { level: label };
+    }
+  }
+});
 
 function stream2buffer(stream) {
   return new Promise((resolve, reject) => {
@@ -23,12 +31,14 @@ module.exports = {
   startServer(bodyHandler) {
     const app = new Koa();
 
-    app.use(pino);
-
     app.use(async (ctx) => {
       if (ctx.method !== 'POST' || ctx.url !== '/loki/api/v1/push') {
         ctx.body = 'Not Found - loki-enhance-middleware'
         ctx.status = 404;
+        logger.warn({
+          method: ctx.method,
+          url: ctx.url
+        }, 'Ignore request');
         return;
       }
 
@@ -49,7 +59,7 @@ module.exports = {
         ctx.body = resp.data;
         ctx.status = resp.status;
       } catch (e) {
-        ctx.log.error(e, 'Unable to proxy request');
+        logger.error(e, 'Unable to proxy request');
         if (e.response) {
           ctx.body = e.response.data;
           ctx.status = e.response.status;
@@ -61,7 +71,7 @@ module.exports = {
     });
     app.listen(config.listen_port);
 
-    pino.logger.info(`listen on ${config.listen_port}`);
+    logger.info(`listen on ${config.listen_port}`);
 
   }
 }

@@ -13,7 +13,12 @@ if (isMainThread) {
 
 const workerId = workerData ? workerData.workerId : 0;
 const logger = require('pino')({
-  name: `worker-${workerId}`
+  name: `worker-${workerId}`,
+  formatters: {
+    level (label, number) {
+      return { level: label };
+    }
+  }
 });
 
 function loadPushRequest() {

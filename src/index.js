@@ -4,7 +4,12 @@ const { startServer } = require('./server.js');
 const config  = require('./config.js');
 
 const logger = require('pino')({
-  name: 'master'
+  name: 'master',
+  formatters: {
+    level (label, number) {
+      return { level: label };
+    }
+  }
 });
 
 if (!isMainThread) {
