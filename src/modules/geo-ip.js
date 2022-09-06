@@ -5,27 +5,29 @@ const lru = require('tiny-lru');
 let lookupCity, lookupASN;
 
 async function prepareDB() {
-  if (!lookupCity) {
-    const option = {
-      cache: {
-        max: 1000
-      }
-    };
+  if (lookupCity) {
+    return;
+  }
 
-    const cityFile = path.join(__dirname, '../../mmdb', 'GeoLite2-City.mmdb', option);
-    const asnFile = path.join(__dirname, '../../mmdb', 'GeoLite2-ASN.mmdb', option);
+  const cityFile = path.join(__dirname, '../../mmdb', 'GeoLite2-City.mmdb');
+  const asnFile = path.join(__dirname, '../../mmdb', 'GeoLite2-ASN.mmdb');
 
-    try {
-      lookupCity = await maxmind.open(cityFile);
-      lookupASN = await maxmind.open(asnFile);
-    } catch (e) {
-      console.log([
-        '*** Cannot load maxmind db files: cityFile, asnFile. ',
-        cityFile,
-        asnFile,
-        '*** Download from https://www.maxmind.com/en/geolite2/signup'
-      ].join('\n'));
+  const option = {
+    cache: {
+      max: 1000
     }
+  };
+
+  try {
+    lookupCity = await maxmind.open(cityFile, option);
+    lookupASN = await maxmind.open(asnFile, option);
+  } catch (e) {
+    console.log([
+      '*** Cannot load maxmind db files: cityFile, asnFile. ',
+      cityFile,
+      asnFile,
+      '*** Download from https://www.maxmind.com/en/geolite2/signup'
+    ].join('\n'));
   }
 }
 
