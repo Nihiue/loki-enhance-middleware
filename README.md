@@ -4,7 +4,7 @@
 
 ## Moudle - Geo IP
 
-Provide GeoIP info from any log source.
+Injects GeoIP info for any log source.
 
 ![未标题-1](https://user-images.githubusercontent.com/5763301/188595103-5719c66c-b94b-40ec-ad49-9e4cf66f07b8.png)
 
