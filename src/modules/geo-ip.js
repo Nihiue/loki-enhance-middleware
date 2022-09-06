@@ -22,7 +22,7 @@ async function prepareDB() {
     lookupCity = await maxmind.open(cityFile, option);
     lookupASN = await maxmind.open(asnFile, option);
   } catch (e) {
-    logger.fatal({
+    log('fatal', {
       cityFile,
       asnFile,
       downloadFrom: 'https://www.maxmind.com/en/geolite2/signup'
@@ -83,8 +83,8 @@ function getGeoInfo(ip) {
 
 const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
-async function handler(data, logger) {
-  await prepareDB(logger);
+async function handler(data, log) {
+  await prepareDB(log);
   data.streams.forEach(function(stream) {
     stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);

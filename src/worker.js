@@ -6,15 +6,12 @@ const config = require('./config.js');
 
 const { isMainThread, parentPort, workerData } = require('worker_threads');
 
-const logger = require('pino')({
-  name: `worker-${workerData ? workerData.workerId : 0}`
-});
+const workerId = workerData ? workerData.workerId : 0;
 
 if (isMainThread) {
-  logger.fatal('worker is MainThread');
+  console.log('worker is MainThread');
   process.exit(1);
 }
-
 
 function loadPushRequest() {
   const root = new protobuf.Root();
@@ -23,6 +20,17 @@ function loadPushRequest() {
   }
   root.loadSync('pkg/logproto/logproto.proto');
   return root.lookupType('logproto.PushRequest');
+}
+
+function log(level, ...args) {
+  parentPort.postMessage({
+    type: 'LOG',
+    data: {
+      from: `worker-${workerId}`,
+      level,
+      args,
+    }
+  });
 }
 
 const PushRequest = loadPushRequest();
@@ -41,7 +49,7 @@ async function processLogData(raw) {
   const data = PushRequest.decode(decompressed);
 
   for (let i = 0; i < handlers.length; i += 1) {
-    await handlers[i](data, logger);
+    await handlers[i](data, log);
   }
 
   const compressed = await snappy.compress(PushRequest.encode(data).finish());
@@ -55,7 +63,7 @@ parentPort.on('message', async function({ data, id, type }) {
     try {
       retData = await processLogData(data);
     } catch (e) {
-      logger.error(e, 'Error when processLogData');
+      log('error', e, 'Error when processLogData');
     }
 
     const msg = {
