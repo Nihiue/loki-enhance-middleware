@@ -2,13 +2,15 @@
 
 `loki-enhance-middleware` hijacks log push requests sent to loki and modifies it.
 
-## Moudles
-
-### Geo IP
+## Moudle - Geo IP
 
 Provide GeoIP info from any log source.
 
 ![未标题-1](https://user-images.githubusercontent.com/5763301/188595103-5719c66c-b94b-40ec-ad49-9e4cf66f07b8.png)
+
+### Setup
+
+Deploy middleware with loki.
 
 `docker-compose.yaml`
 ```yaml
@@ -37,6 +39,8 @@ services:
       expose:
         - 3100
 ```
+
+Config logagent to add `GeoIP_Source=[IP]` placeholder and send requests to middleware.
 
 `promtail-config.yaml`
 ```yaml
@@ -70,4 +74,9 @@ scrape_configs:
           source: output_msg
 ```
 
-`GeoIP_Source=XXX.XXX.XXX.XX` will be replaced by geo-ip fileds
+`GeoIP_Source=[IP]` will be replaced by geo-ip fileds.
+
+```
+geo_ip_asn="HostSlick" geo_ip_continent="North America" geo_ip_city="Ashburn" geo_ip_city_geoname_id="4744870" geo_ip_country="United States" geo_ip_country_geoname_id="6252001" geo_ip_country_iso_code="US" geo_ip_latitude="39.018" geo_ip_longitude="-77.539"
+
+```
