@@ -4,7 +4,7 @@ const lru = require('tiny-lru');
 
 let lookupCity, lookupASN;
 
-async function prepareDB() {
+async function prepareDB(log) {
   if (lookupCity) {
     return;
   }
