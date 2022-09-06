@@ -1,12 +1,20 @@
 const maxmind = require('maxmind');
 const path = require('path');
+const lru = require('tiny-lru');
 
 let lookupCity, lookupASN;
 
 async function prepareDB() {
   if (!lookupCity) {
-    const cityFile = path.join(__dirname, '../../mmdb', 'GeoLite2-City.mmdb');
-    const asnFile = path.join(__dirname, '../../mmdb', 'GeoLite2-ASN.mmdb');
+    const option = {
+      cache: {
+        max: 1000
+      }
+    };
+
+    const cityFile = path.join(__dirname, '../../mmdb', 'GeoLite2-City.mmdb', option);
+    const asnFile = path.join(__dirname, '../../mmdb', 'GeoLite2-ASN.mmdb', option);
+
     try {
       lookupCity = await maxmind.open(cityFile);
       lookupASN = await maxmind.open(asnFile);
@@ -21,6 +29,8 @@ async function prepareDB() {
   }
 }
 
+const geoInfoCache = lru(1000, ttl = 0);
+
 function getGeoInfo(ip) {
   if (!lookupCity || !lookupASN) {
     throw new Error('db_not_init');
@@ -28,6 +38,11 @@ function getGeoInfo(ip) {
 
   if (!ip) {
     return '';
+  }
+
+  let geoStr = geoInfoCache.get(ip);
+  if (geoStr) {
+    return geoStr;
   }
 
   const asn = lookupASN.get(ip);
@@ -44,14 +59,19 @@ function getGeoInfo(ip) {
     ret.latitude = main.location && main.location.latitude;
     ret.longitude = main.location && main.location.longitude;
   }
-  return Object.keys(ret).map(function(k) {
+
+  geoStr = Object.keys(ret).map(function(k) {
     if (ret[k]) {
       return `geo_ip_${k}="${ret[k]}"`
     }
   }).filter(l => l).join(' ');
+
+
+  geoInfoCache.set(ip, geoStr);
+  return geoStr;
 }
 
-const geoRegx = /GeoIP_Source=(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/;
+const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
 async function handler(data) {
   await prepareDB();
@@ -59,7 +79,7 @@ async function handler(data) {
     stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);
       if (res) {
-        const geoInfo = getGeoInfo(res[1]);
+        const geoInfo = getGeoInfo(res[1].toLowerCase());
         entry.line = entry.line.replace(geoRegx, geoInfo);
       }
     });

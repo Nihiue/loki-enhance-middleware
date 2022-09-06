@@ -28,7 +28,7 @@ if (config.enabled_modules.includes('geo-ip')) {
 }
 
 async function processLogData(raw) {
-  if (handlers === 0) {
+  if (handlers.length === 0) {
     return raw;
   }
 
