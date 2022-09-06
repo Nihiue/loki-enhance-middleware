@@ -23,7 +23,9 @@ services:
 
 
       volumes:
-        - /mnt/vol2/mmdb:/app/mmdb:ro # maxmind db files, https://www.maxmind.com/en/geolite2/signup
+          # maxmind db files, https://www.maxmind.com/en/geolite2/signup
+          # GeoLite2-ASN.mmdb, GeoLite2-City.mmdb
+        - /mnt/vol2/mmdb:/app/mmdb:ro
 
       environment:
         - LOKI_HOST=http://loki:3100
