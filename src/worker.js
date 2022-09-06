@@ -6,14 +6,15 @@ const config = require('./config.js');
 
 const { isMainThread, parentPort, workerData } = require('worker_threads');
 
+const logger = require('pino')({
+  name: `worker-${workerData ? workerData.workerId : 0}`
+});
+
 if (isMainThread) {
   logger.fatal('worker is MainThread');
   process.exit(1);
 }
 
-const logger = require('pino')({
-  name: `worker-${workerData.workerId}`
-});
 
 function loadPushRequest() {
   const root = new protobuf.Root();
