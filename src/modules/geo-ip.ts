@@ -10,7 +10,7 @@ let lookupCity: Reader<CityResponse> | null = null;
 let lookupASN: Reader<AsnResponse> | null = null;
 
 
-export async function init(logger: Logger) {
+async function init(logger: Logger) {
   if (lookupCity) {
     return;
   }
@@ -93,14 +93,19 @@ function getGeoInfo(ip: string) {
 
 const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
-export function handler(data: IPushRequest) {
+function handler(data: IPushRequest) {
   data.streams && data.streams.forEach(function(stream) {
     stream.entries && stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);
-      if (res) {
+      if (res && entry.line) {
         const geoInfo = getGeoInfo(res[1].toLowerCase());
         entry.line = entry.line.replace(geoRegx, geoInfo);
       }
     });
   });
 }
+
+export default {
+  init,
+  handler
+};

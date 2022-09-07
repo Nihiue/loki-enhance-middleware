@@ -7,7 +7,7 @@
   "scripts": {
     "compile-proto": "sh compile-proto.sh",
     "build": "tsc -d && cp src/misc/push-request.** dist/src/misc/",
-    "dev": "npm run build && node dist/src/index.js",
+    "serve": "node dist/src/index.js",
     "test": "npm run build && c8 mocha dist/test"
   },
   "author": "nihiue@gmail.com",

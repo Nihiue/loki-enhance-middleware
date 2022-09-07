@@ -1,4 +1,4 @@
-import { getLogger, isBuffer, getDirName } from './misc/utils.js';
+import { getLogger, isBuffer, isUint8Array, getDirName } from './misc/utils.js';
 import { Worker, isMainThread } from 'worker_threads';
 import { ThreadMessage, RequestDisptcher } from './misc/protocol.js';
 import * as path from 'path';
@@ -11,6 +11,11 @@ let jobIdCounter = 0;
 
 function workerMsgHandler({ type, id, data }: ThreadMessage) {
   if (typeof id === 'number' && type === 'DATA_OUTPUT' && pendingJobs.has(id)) {
+
+    if (isUint8Array(data)) {
+      data = Buffer.from(data);
+    }
+
     (pendingJobs.get(id) as Function)(data);
     pendingJobs.delete(id);
     return;
@@ -69,7 +74,10 @@ export function startWorker(worker_count: number) {
 
   return function() {
     const stopMsg: ThreadMessage =  {
-      type: 'STOP_WORKER'
+      type: 'STOP_WORKER',
+      data: {
+        reason: 'shutdown'
+      }
     }
     workers.forEach(wk => wk.postMessage(stopMsg));
   }

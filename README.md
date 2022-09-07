@@ -1,5 +1,8 @@
 # loki-enhance-middleware
 
+![typescript](https://img.shields.io/npm/types/scrub-js.svg)
+[![Test Suite](https://github.com/Nihiue/proxy-reactive-demo/actions/workflows/main/badge.svg)](https://github.com/Nihiue/proxy-reactive-demo/actions/workflows/main.yaml)
+
 `loki-enhance-middleware` hijacks log push requests sent to loki and modifies it.
 
 ## Moudle - Geo IP

@@ -18,7 +18,7 @@ export default function startServer(config: Config, dispatchReq: RequestDisptche
         throw new Error('Empty result');
       }
 
-      const { data, status } = await sendToLoki(raw, {
+      const { data, status } = await sendToLoki(result, {
         'content-type': ctx.request.headers['content-type'] || 'application/x-protobuf',
         'user-agent': ctx.request.headers['user-agent'] || 'loki enhance middleware'
       });

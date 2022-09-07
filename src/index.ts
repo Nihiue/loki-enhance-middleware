@@ -19,8 +19,8 @@ if (process.env.NODE_ENV === 'test') {
       resolve({
         status: 200,
         data: {
-          echo: {
-            raw,
+          $echo: {
+            rawInHex: raw.toString('hex'),
             headers
           }
         }

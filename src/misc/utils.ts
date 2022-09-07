@@ -5,6 +5,7 @@ import * as url from 'url';
 export function getLogger(name ?: string) {
   return pino({
     name,
+    level: process.env.NODE_ENV === 'test' ? 'fatal' : 'info',
     formatters: {
       level (label:any, number:any) {
         return { level: label };
@@ -18,6 +19,10 @@ export function getLogger(name ?: string) {
 
 export function isBuffer(v:unknown): v is Buffer {
   return v instanceof Buffer;
+}
+
+export function isUint8Array(v:unknown): v is Uint8Array {
+  return v instanceof Uint8Array;
 }
 
 export function readIncomingMessage(stream: IncomingMessage, timeout = 60): Promise<Buffer> {
