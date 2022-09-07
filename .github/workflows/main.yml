@@ -1,10 +1,16 @@
 # This is a basic workflow to help you get started with Actions
-name: CI
+name: Test and Build
 
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
+    paths:
+      - 'test/**'
+      - 'src/**'
+      - 'package.json'
+      - 'Dockerfile'
+
     branches: [ main ]
   workflow_dispatch:
 
