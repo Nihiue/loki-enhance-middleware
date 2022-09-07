@@ -26,10 +26,6 @@ services:
   enhance_middleware:
       image: nihiue/loki_enhance_middleware:latest
       restart: always
-      volumes:
-          # maxmind db files, https://www.maxmind.com/en/geolite2/signup
-          # /app/mmdb/GeoLite2-ASN.mmdb, /app/mmdb/GeoLite2-City.mmdb
-        - /mnt/vol2/mmdb/:/app/mmdb/:ro
 
       environment:
         - LOKI_HOST=http://loki:3100

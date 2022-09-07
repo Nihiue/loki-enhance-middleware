@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package PushRequestOnlyPackage;
+
+import "pkg/logproto/logproto.proto";
+
+message PushRequest {
+  repeated logproto.StreamAdapter streams = 1 [
+    (gogoproto.jsontag) = "streams",
+    (gogoproto.customtype) = "Stream"
+  ];
+}
