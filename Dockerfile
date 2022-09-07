@@ -1,4 +1,4 @@
-FROM node:16-alpine as builder
+FROM node:14-alpine as builder
 MAINTAINER Wanglei<nihiue@gmail.com>
 
 WORKDIR /buidler
@@ -6,7 +6,7 @@ COPY . .
 RUN npm install && npm run build && npm run compile-proto
 RUN npm prune --production
 
-FROM node:16-alpine
+FROM node:14-alpine
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 WORKDIR /app
