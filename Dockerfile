@@ -1,13 +1,19 @@
-FROM node:14-alpine
+FROM node:16-alpine as builder
 MAINTAINER Wanglei<nihiue@gmail.com>
 
-#RUN npm config set disturl https://npm.taobao.org/dist --global
-#RUN npm config set registry https://registry.npm.taobao.org --global
-
-WORKDIR /app
+WORKDIR /buidler
 COPY . .
-RUN npm install
+RUN npm install && npm run build && npm run compile-proto
+RUN npm prune --production
+
+FROM node:16-alpine
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-EXPOSE 3100
-ENTRYPOINT node src/index.js
+WORKDIR /app
+
+COPY --from=builder /buidler/dist ./
+COPY --from=builder /buidler/mmdb ./
+COPY --from=builder /buidler/node_modules ./
+COPY --from=builder /buidler/package.json ./
+
+ENTRYPOINT npm run serve

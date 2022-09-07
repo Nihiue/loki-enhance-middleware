@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+      "outDir": "dist",
+      "module": "ES2020",
+      "target": "es2019",
+      "noImplicitAny": true,
+      "removeComments": true,
+      "preserveConstEnums": true,
+      "sourceMap": false,
+      "moduleResolution": "node16",
+      "strictNullChecks": true,
+      "skipLibCheck": true
+  },
+  "include": [
+    "src/",
+    "test/"
+  ],
+  "exclude": [
+    "node_modules",
+  ],
+}
