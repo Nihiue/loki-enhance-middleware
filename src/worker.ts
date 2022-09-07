@@ -1,25 +1,25 @@
 import { isMainThread, parentPort, workerData } from 'worker_threads';
-import { getLogger, isAsyncFunction, isBuffer, isUint8Array } from './misc/utils.js';
-import { ThreadMessage, IPushRequest } from './misc/protocol.js';
+import * as utils from './misc/utils.js';
+import { ThreadMessage, IPushRequest, Config } from './misc/protocol.js';
 import { decode, encode } from './misc/message.js';
-import { Logger } from 'pino';
 import geoIpModule from './modules/geo-ip.js';
 
-import config from './config.js';
 
 const workerId = workerData ? workerData.workerId : 0;
-const logger = getLogger(`worker-${workerId}`);
+const logger = utils.getLogger(`worker-${workerId}`);
 
-if (isMainThread) {
-  logger.fatal('worker is MainThread');
+if (isMainThread || !workerData) {
+  logger.error('worker is MainThread');
   process.exit(1);
 }
 
-type ModuleHandler = (data: IPushRequest, logger?: Logger) => void;
+const config:Config = workerData.config;
+
+type ModuleHandler = (data: IPushRequest, logger?: utils.Logger) => void;
 const handlers: ModuleHandler[] = [];
 
 function registerHandler(handler: ModuleHandler) {
-  if (isAsyncFunction(handler)) {
+  if (utils.isAsyncFunction(handler)) {
     throw new Error('handler must be synchronous');
   }
   handlers.push(handler);
@@ -50,7 +50,7 @@ async function processLogStream(raw: Buffer) {
 }
 
 if (!parentPort) {
-  logger.fatal('parentPort not exists');
+  logger.error('parentPort not exists');
   process.exit(1);
 }
 
@@ -58,16 +58,16 @@ parentPort.on('message', async function({ data, id, type }: ThreadMessage) {
   if (type === 'DATA_INPUT') {
     let retData = null;
 
-    if (isUint8Array(data)) {
+    if (utils.isUint8Array(data)) {
       data = Buffer.from(data);
     }
 
-    if (isBuffer(data)) {
+    if (utils.isBuffer(data)) {
       try {
         await untilModulesLoaded;
         retData = await processLogStream(data);
       } catch (e) {
-        logger.error(e, 'error when processLogStream');
+        logger.error('error when processLogStream', e.message);
       }
     } else {
       logger.error('invalid input type');

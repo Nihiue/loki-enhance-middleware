@@ -1,4 +1,3 @@
-import config from '../config.js';
 export { IPushRequest } from './message.js';
 
 export interface ThreadMessage {
@@ -8,7 +7,14 @@ export interface ThreadMessage {
 };
 
 export type RequestDisptcher = (raw: Buffer) => Promise<Buffer|null> | null;
-export type LokiSender = (raw: Buffer, headers?: Record<string, string>) => Promise<{ data: any, status: number}>
-export type Config = typeof config;
+
+export type LokiSender = (raw: Buffer, headers?: Record<string, string>) => Promise<{ data: any, status: number, contentType: string }>
+
+export type Config = {
+  loki_host: string;
+  worker_count: number;
+  listen_port: number;
+  enabled_modules: string;
+};
 
 

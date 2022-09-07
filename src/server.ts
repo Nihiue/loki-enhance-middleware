@@ -1,43 +1,46 @@
 import Koa from 'koa';
 
-import { getLogger, readIncomingMessage } from './misc/utils.js';
-import { Config, RequestDisptcher, LokiSender } from './misc/protocol.js';
+import * as utils from './misc/utils.js';
+import { RequestDisptcher, Config } from './misc/protocol.js';
 
-const logger = getLogger('server');
+import { getLokiSender } from './misc/request.js';
+const logger = utils.getLogger('server');
 
-const app = new Koa();
+export default function startServer(config: Config, dispatchReq: RequestDisptcher) {
+  const lokiSender = getLokiSender(config.loki_host, logger);
 
-export default function startServer(config: Config, dispatchReq: RequestDisptcher, sendToLoki: LokiSender) {
+  const app = new Koa();
 
   async function logStreamHandler(ctx: Koa.Context) {
     try {
-      const raw = await readIncomingMessage(ctx.req);
+      const raw = await utils.readIncomingMessage(ctx.req);
       const result = await dispatchReq(raw);
 
       if (!result) {
         throw new Error('Empty result');
       }
 
-      const { data, status } = await sendToLoki(result, {
+      const { data, status, contentType } = await lokiSender(result, {
         'content-type': ctx.request.headers['content-type'] || 'application/x-protobuf',
         'user-agent': ctx.request.headers['user-agent'] || 'loki enhance middleware'
       });
 
+      ctx.set('content-type', contentType);
       ctx.body = data;
       ctx.status = status;
 
     } catch (e) {
       if (e.response) {
-        logger.error({
+        logger.error('target reject', {
           message: e.toString(),
           data: e.response.data.toString(),
           status: e.response.status
-        }, 'target reject');
+        });
 
         ctx.body = e.response.data;
         ctx.status = e.response.status;
       } else {
-        logger.error(e.message, 'Unable to proxy request');
+        logger.error('Unable to proxy request', e.message);
         ctx.body = 'middleware error: ' + e.toString();
         ctx.status = 500;
       }
@@ -47,10 +50,7 @@ export default function startServer(config: Config, dispatchReq: RequestDisptche
   async function defaultHandler(ctx: Koa.Context) {
       ctx.body = 'Not Found - loki-enhance-middleware'
       ctx.status = 404;
-      logger.warn({
-        method: ctx.method,
-        url: ctx.url
-      }, 'Ignore request');
+      logger.warn('Ignore request', ctx.method, ctx.url);
   }
 
   async function readyHandler(ctx: Koa.Context) {

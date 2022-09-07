@@ -1,10 +1,11 @@
-import { getLogger, isBuffer, isUint8Array, getDirName } from './misc/utils.js';
 import { Worker, isMainThread } from 'worker_threads';
-import { ThreadMessage, RequestDisptcher } from './misc/protocol.js';
+import { ThreadMessage, RequestDisptcher, Config } from './misc/protocol.js';
 import * as path from 'path';
 
-const logger = getLogger('dispatcher');
-const workerFilePath = path.join(getDirName(import.meta.url), 'worker.js');
+import * as utils from './misc/utils.js';
+
+const logger = utils.getLogger('dispatcher');
+const workerFilePath = path.join(utils.getDirName(import.meta.url), 'worker.js');
 const pendingJobs: Map<number, Function> = new Map();
 const workers: Worker[] = [];
 let jobIdCounter = 0;
@@ -12,7 +13,7 @@ let jobIdCounter = 0;
 function workerMsgHandler({ type, id, data }: ThreadMessage) {
   if (typeof id === 'number' && type === 'DATA_OUTPUT' && pendingJobs.has(id)) {
 
-    if (isUint8Array(data)) {
+    if (utils.isUint8Array(data)) {
       data = Buffer.from(data);
     }
 
@@ -23,43 +24,44 @@ function workerMsgHandler({ type, id, data }: ThreadMessage) {
 }
 
 export const dispatchProcessReq:RequestDisptcher = function (raw: any) {
-  if (workers.length === 0) {
-    logger.fatal('no workers');
-    return null;
+    if (workers.length === 0) {
+      logger.error('no workers');
+      return null;
+    }
+
+    if (!utils.isBuffer(raw)) {
+      logger.error('input is not Buffer');
+      return null;
+    }
+
+    const id = (jobIdCounter += 1);
+
+    if (id % 10 === 0) {
+      logger.info('New job', { jobId: id, pendingCount: pendingJobs.size });
+    }
+
+    return new Promise<Buffer|null>(function(resolve, reject) {
+      pendingJobs.set(id, resolve);
+      const msg: ThreadMessage = {
+        type: 'DATA_INPUT',
+        id,
+        data: raw
+      };
+      workers[id % workers.length].postMessage(msg, [ raw.buffer ]);
+    });
   }
 
-  if (!isBuffer(raw)) {
-    logger.fatal('input is not Buffer');
-    return null;
-  }
-
-  const id = (jobIdCounter += 1);
-
-  if (id % 10 === 0) {
-    logger.info({ jobId: id, pendingCount: pendingJobs.size }, 'New job');
-  }
-
-  return new Promise<Buffer|null>(function(resolve, reject) {
-    pendingJobs.set(id, resolve);
-    const msg: ThreadMessage = {
-      type: 'DATA_INPUT',
-      id,
-      data: raw
-    };
-    workers[id % workers.length].postMessage(msg, [ raw.buffer ]);
-  });
-}
-
-export function startWorker(worker_count: number) {
+export function initDispatcher(config: Config) {
   if (!isMainThread) {
-    logger.fatal('dispatcher must run in MainThread');
+    logger.error('dispatcher must run in MainThread');
     process.exit(1);
   }
 
-  while (workers.length < worker_count) {
+  while (workers.length < config.worker_count) {
     const wkr = new Worker(workerFilePath, {
       workerData: {
-        workerId: workers.length
+        workerId: workers.length,
+        config,
       }
     });
     wkr.on('message', workerMsgHandler);
@@ -80,5 +82,5 @@ export function startWorker(worker_count: number) {
       }
     }
     workers.forEach(wk => wk.postMessage(stopMsg));
-  }
+  };
 }

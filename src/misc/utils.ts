@@ -1,20 +1,19 @@
 import { IncomingMessage } from 'http';
-import { pino } from 'pino';
 import * as url from 'url';
+import * as winston from 'winston';
 
-export function getLogger(name ?: string) {
-  return pino({
-    name,
-    level: process.env.NODE_ENV === 'test' ? 'fatal' : 'info',
-    formatters: {
-      level (label:any, number:any) {
-        return { level: label };
-      }
-    },
-    transport: {
-      target: 'pino-pretty'
-    },
-  });
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.simple(),
+  transports: [
+    new winston.transports.Console()
+  ],
+  silent: process.env.NODE_ENV === 'test'
+});
+
+export type Logger = winston.Logger;
+export function getLogger(name ?: string):any {
+  return logger.child({ name });
 }
 
 export function isBuffer(v:unknown): v is Buffer {

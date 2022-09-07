@@ -2,8 +2,7 @@ import maxmind from 'maxmind';
 import * as path from 'path';
 import LRU from 'tiny-lru';
 import { Reader, AsnResponse, CityResponse } from 'maxmind';
-import { Logger } from 'pino';
-import { getDirName } from '../misc/utils.js';
+import { getDirName, Logger } from '../misc/utils.js';
 import { IPushRequest } from '../misc/protocol.js';
 
 let lookupCity: Reader<CityResponse> | null = null;
@@ -29,11 +28,11 @@ async function init(logger: Logger) {
     lookupCity = await maxmind.open(cityFile, mmOption);
     lookupASN = await maxmind.open(asnFile, mmOption);
   } catch (e) {
-    logger.fatal({
+    logger.error('Missing maxmind DB files', {
       cityFile,
       asnFile,
       source: 'Please download from https://www.maxmind.com/en/geolite2/signup'
-    }, 'Missing maxmind DB files');
+    });
     throw new Error('Maxmind DB not ready');
   }
 }

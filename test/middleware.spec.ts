@@ -1,8 +1,8 @@
-import axios from 'axios';
 import * as snappy from 'snappy';
 
 import { strictEqual, throws, rejects } from 'node:assert';
 import { encode, decode, IPushRequest } from '../src/misc/message.js';
+import request from '../src/misc/request.js';
 
 process.env.NODE_ENV = 'test';
 
@@ -11,13 +11,17 @@ let appModule:any;
 describe('server test suite', function () {
   it('should server start', async function() {
     appModule = await import('../src/index.js');
-    await axios.default.get('http://localhost:3100/ready');
+    await request('http://localhost:3100/ready', {
+      method: 'GET'
+    });
   });
 
   it('should server rejects unknown requests', async function() {
     await rejects(
-      axios.default.post('http://localhost:3100/foo'),
-      (e:Error) => e.message.includes('status code 404')
+      request('http://localhost:3100/foo', {
+        method: 'POST'
+      }),
+      (e:Error) => e.message.includes('status 404')
     );
   });
 
@@ -110,7 +114,9 @@ describe('e2e test suite', function () {
   };
 
   it('should proxy request', async function() {
-    const resp = await axios.default.post('http://localhost:3100/loki/api/v1/push', encode(payload), {
+    const resp = await request('http://localhost:3100/loki/api/v1/push', {
+      method: 'POST',
+      body: encode(payload),
       headers: {
         'user-agent': 'my-test-agent',
         'content-type': 'application/x-protobuf'
@@ -132,7 +138,9 @@ describe('e2e test suite', function () {
     payload.streams[0].entries[0].line = 'foo=bar GeoIP_Source=114.92.1.1';
     payload.streams[1].entries[1].line = 'foo=bar GeoIP_Source=52.144.59.143';
 
-    const resp = await axios.default.post('http://localhost:3100/loki/api/v1/push', encode(payload), {
+    const resp = await request('http://localhost:3100/loki/api/v1/push', {
+      method: 'POST',
+      body: encode(payload),
       headers: {
         'content-type': 'application/x-protobuf'
       }
