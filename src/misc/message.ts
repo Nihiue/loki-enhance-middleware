@@ -1,8 +1,8 @@
 import * as snappy from 'snappy';
-import pkg from './push-request.cjs';
+import { PushRequestPackage } from './push-request.js';
 
-export const PushRequest = pkg.PushRequestPackage.PushRequest;
-export type IPushRequest = pkg.PushRequestPackage.IPushRequest;
+export const PushRequest = PushRequestPackage.PushRequest;
+export type IPushRequest = PushRequestPackage.IPushRequest;
 
 export function decode(raw: Buffer): IPushRequest  {
   const decompressed = snappy.uncompressSync(raw, {

@@ -1,22 +1,20 @@
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
-"use strict";
-
-var $protobuf = require("protobufjs/minimal");
+import $protobuf from "protobufjs/minimal.js";
 
 // Common aliases
-var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-var $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
+const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
 
-$root.PushRequestPackage = (function() {
+export const PushRequestPackage = $root.PushRequestPackage = (() => {
 
     /**
      * Namespace PushRequestPackage.
      * @exports PushRequestPackage
      * @namespace
      */
-    var PushRequestPackage = {};
+    const PushRequestPackage = {};
 
     PushRequestPackage.PushRequest = (function() {
 
@@ -38,7 +36,7 @@ $root.PushRequestPackage = (function() {
         function PushRequest(properties) {
             this.streams = [];
             if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
                         this[keys[i]] = properties[keys[i]];
         }
@@ -76,7 +74,7 @@ $root.PushRequestPackage = (function() {
             if (!writer)
                 writer = $Writer.create();
             if (message.streams != null && message.streams.length)
-                for (var i = 0; i < message.streams.length; ++i)
+                for (let i = 0; i < message.streams.length; ++i)
                     $root.PushRequestPackage.StreamAdapter.encode(message.streams[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
             return writer;
         };
@@ -108,9 +106,9 @@ $root.PushRequestPackage = (function() {
         PushRequest.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.PushRequest();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.PushRequest();
             while (reader.pos < end) {
-                var tag = reader.uint32();
+                let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.streams && message.streams.length))
@@ -156,8 +154,8 @@ $root.PushRequestPackage = (function() {
             if (message.streams != null && message.hasOwnProperty("streams")) {
                 if (!Array.isArray(message.streams))
                     return "streams: array expected";
-                for (var i = 0; i < message.streams.length; ++i) {
-                    var error = $root.PushRequestPackage.StreamAdapter.verify(message.streams[i]);
+                for (let i = 0; i < message.streams.length; ++i) {
+                    let error = $root.PushRequestPackage.StreamAdapter.verify(message.streams[i]);
                     if (error)
                         return "streams." + error;
                 }
@@ -176,12 +174,12 @@ $root.PushRequestPackage = (function() {
         PushRequest.fromObject = function fromObject(object) {
             if (object instanceof $root.PushRequestPackage.PushRequest)
                 return object;
-            var message = new $root.PushRequestPackage.PushRequest();
+            let message = new $root.PushRequestPackage.PushRequest();
             if (object.streams) {
                 if (!Array.isArray(object.streams))
                     throw TypeError(".PushRequestPackage.PushRequest.streams: array expected");
                 message.streams = [];
-                for (var i = 0; i < object.streams.length; ++i) {
+                for (let i = 0; i < object.streams.length; ++i) {
                     if (typeof object.streams[i] !== "object")
                         throw TypeError(".PushRequestPackage.PushRequest.streams: object expected");
                     message.streams[i] = $root.PushRequestPackage.StreamAdapter.fromObject(object.streams[i]);
@@ -202,12 +200,12 @@ $root.PushRequestPackage = (function() {
         PushRequest.toObject = function toObject(message, options) {
             if (!options)
                 options = {};
-            var object = {};
+            let object = {};
             if (options.arrays || options.defaults)
                 object.streams = [];
             if (message.streams && message.streams.length) {
                 object.streams = [];
-                for (var j = 0; j < message.streams.length; ++j)
+                for (let j = 0; j < message.streams.length; ++j)
                     object.streams[j] = $root.PushRequestPackage.StreamAdapter.toObject(message.streams[j], options);
             }
             return object;
@@ -264,7 +262,7 @@ $root.PushRequestPackage = (function() {
         function StreamAdapter(properties) {
             this.entries = [];
             if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
                         this[keys[i]] = properties[keys[i]];
         }
@@ -320,7 +318,7 @@ $root.PushRequestPackage = (function() {
             if (message.labels != null && Object.hasOwnProperty.call(message, "labels"))
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.labels);
             if (message.entries != null && message.entries.length)
-                for (var i = 0; i < message.entries.length; ++i)
+                for (let i = 0; i < message.entries.length; ++i)
                     $root.PushRequestPackage.EntryAdapter.encode(message.entries[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
             if (message.hash != null && Object.hasOwnProperty.call(message, "hash"))
                 writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.hash);
@@ -354,9 +352,9 @@ $root.PushRequestPackage = (function() {
         StreamAdapter.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.StreamAdapter();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.StreamAdapter();
             while (reader.pos < end) {
-                var tag = reader.uint32();
+                let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1: {
                         message.labels = reader.string();
@@ -413,8 +411,8 @@ $root.PushRequestPackage = (function() {
             if (message.entries != null && message.hasOwnProperty("entries")) {
                 if (!Array.isArray(message.entries))
                     return "entries: array expected";
-                for (var i = 0; i < message.entries.length; ++i) {
-                    var error = $root.PushRequestPackage.EntryAdapter.verify(message.entries[i]);
+                for (let i = 0; i < message.entries.length; ++i) {
+                    let error = $root.PushRequestPackage.EntryAdapter.verify(message.entries[i]);
                     if (error)
                         return "entries." + error;
                 }
@@ -436,14 +434,14 @@ $root.PushRequestPackage = (function() {
         StreamAdapter.fromObject = function fromObject(object) {
             if (object instanceof $root.PushRequestPackage.StreamAdapter)
                 return object;
-            var message = new $root.PushRequestPackage.StreamAdapter();
+            let message = new $root.PushRequestPackage.StreamAdapter();
             if (object.labels != null)
                 message.labels = String(object.labels);
             if (object.entries) {
                 if (!Array.isArray(object.entries))
                     throw TypeError(".PushRequestPackage.StreamAdapter.entries: array expected");
                 message.entries = [];
-                for (var i = 0; i < object.entries.length; ++i) {
+                for (let i = 0; i < object.entries.length; ++i) {
                     if (typeof object.entries[i] !== "object")
                         throw TypeError(".PushRequestPackage.StreamAdapter.entries: object expected");
                     message.entries[i] = $root.PushRequestPackage.EntryAdapter.fromObject(object.entries[i]);
@@ -473,13 +471,13 @@ $root.PushRequestPackage = (function() {
         StreamAdapter.toObject = function toObject(message, options) {
             if (!options)
                 options = {};
-            var object = {};
+            let object = {};
             if (options.arrays || options.defaults)
                 object.entries = [];
             if (options.defaults) {
                 object.labels = "";
                 if ($util.Long) {
-                    var long = new $util.Long(0, 0, true);
+                    let long = new $util.Long(0, 0, true);
                     object.hash = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                 } else
                     object.hash = options.longs === String ? "0" : 0;
@@ -488,7 +486,7 @@ $root.PushRequestPackage = (function() {
                 object.labels = message.labels;
             if (message.entries && message.entries.length) {
                 object.entries = [];
-                for (var j = 0; j < message.entries.length; ++j)
+                for (let j = 0; j < message.entries.length; ++j)
                     object.entries[j] = $root.PushRequestPackage.EntryAdapter.toObject(message.entries[j], options);
             }
             if (message.hash != null && message.hasOwnProperty("hash"))
@@ -548,7 +546,7 @@ $root.PushRequestPackage = (function() {
          */
         function EntryAdapter(properties) {
             if (properties)
-                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                     if (properties[keys[i]] != null)
                         this[keys[i]] = properties[keys[i]];
         }
@@ -627,9 +625,9 @@ $root.PushRequestPackage = (function() {
         EntryAdapter.decode = function decode(reader, length) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
-            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.EntryAdapter();
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.EntryAdapter();
             while (reader.pos < end) {
-                var tag = reader.uint32();
+                let tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1: {
                         message.timestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
@@ -675,7 +673,7 @@ $root.PushRequestPackage = (function() {
             if (typeof message !== "object" || message === null)
                 return "object expected";
             if (message.timestamp != null && message.hasOwnProperty("timestamp")) {
-                var error = $root.google.protobuf.Timestamp.verify(message.timestamp);
+                let error = $root.google.protobuf.Timestamp.verify(message.timestamp);
                 if (error)
                     return "timestamp." + error;
             }
@@ -696,7 +694,7 @@ $root.PushRequestPackage = (function() {
         EntryAdapter.fromObject = function fromObject(object) {
             if (object instanceof $root.PushRequestPackage.EntryAdapter)
                 return object;
-            var message = new $root.PushRequestPackage.EntryAdapter();
+            let message = new $root.PushRequestPackage.EntryAdapter();
             if (object.timestamp != null) {
                 if (typeof object.timestamp !== "object")
                     throw TypeError(".PushRequestPackage.EntryAdapter.timestamp: object expected");
@@ -719,7 +717,7 @@ $root.PushRequestPackage = (function() {
         EntryAdapter.toObject = function toObject(message, options) {
             if (!options)
                 options = {};
-            var object = {};
+            let object = {};
             if (options.defaults) {
                 object.timestamp = null;
                 object.line = "";
@@ -763,14 +761,14 @@ $root.PushRequestPackage = (function() {
     return PushRequestPackage;
 })();
 
-$root.google = (function() {
+export const google = $root.google = (() => {
 
     /**
      * Namespace google.
      * @exports google
      * @namespace
      */
-    var google = {};
+    const google = {};
 
     google.protobuf = (function() {
 
@@ -779,7 +777,7 @@ $root.google = (function() {
          * @memberof google
          * @namespace
          */
-        var protobuf = {};
+        const protobuf = {};
 
         protobuf.Timestamp = (function() {
 
@@ -801,7 +799,7 @@ $root.google = (function() {
              */
             function Timestamp(properties) {
                 if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                         if (properties[keys[i]] != null)
                             this[keys[i]] = properties[keys[i]];
             }
@@ -880,9 +878,9 @@ $root.google = (function() {
             Timestamp.decode = function decode(reader, length) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Timestamp();
+                let end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Timestamp();
                 while (reader.pos < end) {
-                    var tag = reader.uint32();
+                    let tag = reader.uint32();
                     switch (tag >>> 3) {
                     case 1: {
                             message.seconds = reader.int64();
@@ -947,7 +945,7 @@ $root.google = (function() {
             Timestamp.fromObject = function fromObject(object) {
                 if (object instanceof $root.google.protobuf.Timestamp)
                     return object;
-                var message = new $root.google.protobuf.Timestamp();
+                let message = new $root.google.protobuf.Timestamp();
                 if (object.seconds != null)
                     if ($util.Long)
                         (message.seconds = $util.Long.fromValue(object.seconds)).unsigned = false;
@@ -974,10 +972,10 @@ $root.google = (function() {
             Timestamp.toObject = function toObject(message, options) {
                 if (!options)
                     options = {};
-                var object = {};
+                let object = {};
                 if (options.defaults) {
                     if ($util.Long) {
-                        var long = new $util.Long(0, 0, false);
+                        let long = new $util.Long(0, 0, false);
                         object.seconds = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                     } else
                         object.seconds = options.longs === String ? "0" : 0;
@@ -1028,4 +1026,4 @@ $root.google = (function() {
     return google;
 })();
 
-module.exports = $root;
+export { $root as default };

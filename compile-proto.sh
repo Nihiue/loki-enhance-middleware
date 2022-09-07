@@ -1,4 +1,8 @@
-pbjs --sparse -t static-module -w commonjs -o src/misc/push-request.js -p proto-path proto-path/push-request.proto
+npx pbjs --sparse --es6 -t static-module -w es6 -o src/misc/push-request.js -p proto-path proto-path/push-request.proto
+
 cd src/misc
-pbts -o push-request.d.cts push-request.js
-mv -f push-request.js push-request.cjs
+
+# what the fuck
+sed -i 's|import \* as $protobuf|import $protobuf|' push-request.js
+sed -i 's|protobufjs/minimal|protobufjs/minimal.js|' push-request.js
+npx pbts -o push-request.d.ts push-request.js
