@@ -11,9 +11,9 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 WORKDIR /app
 
-COPY --from=builder /buidler/dist ./
-COPY --from=builder /buidler/mmdb ./
-COPY --from=builder /buidler/node_modules ./
-COPY --from=builder /buidler/package.json ./
+COPY --from=builder /buidler/dist ./dist
+COPY --from=builder /buidler/mmdb ./mmdb
+COPY --from=builder /buidler/node_modules ./node_modules
+COPY --from=builder /buidler/package.json ./package.json
 
 ENTRYPOINT npm run serve
