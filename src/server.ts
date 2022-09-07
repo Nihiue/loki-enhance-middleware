@@ -27,7 +27,6 @@ export default function startServer(config: Config, dispatchReq: RequestDisptche
       ctx.status = status;
 
     } catch (e) {
-      logger.error(e, 'Unable to proxy request');
       if (e.response) {
         ctx.body = e.response.data;
         ctx.status = e.response.status;
@@ -35,6 +34,10 @@ export default function startServer(config: Config, dispatchReq: RequestDisptche
         ctx.body = 'middleware error: ' + e.toString();
         ctx.status = 500;
       }
+      if (e.config) {
+        delete e.config.data;
+      }
+      logger.error(e, 'Unable to proxy request');
     }
   }
 
