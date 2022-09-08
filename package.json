@@ -2,13 +2,12 @@
   "name": "loki-enhance-middleware",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
-  "type": "module",
+  "main": "dist/src/index.mjs",
   "scripts": {
     "compile-proto": "sh compile-proto.sh",
     "build": "tsc -d && cp src/misc/push-request.** dist/src/misc/",
-    "serve": "node dist/src/index.js",
-    "test": "c8 mocha dist/test"
+    "serve": "node dist/src/index.mjs",
+    "test": "NODE_ENV=test c8 mocha dist/test"
   },
   "author": "nihiue@gmail.com",
   "repository": {

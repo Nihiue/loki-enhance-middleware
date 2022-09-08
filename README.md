@@ -32,7 +32,7 @@ services:
 
       environment:
         - LOKI_HOST=http://loki:3100
-        - WORKER_COUNT=3
+        - WORKER_COUNT=1
         - PORT=3100
 
       expose:

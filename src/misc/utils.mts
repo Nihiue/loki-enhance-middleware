@@ -1,5 +1,6 @@
-import { IncomingMessage } from 'http';
 import * as url from 'url';
+import * as path from 'path';
+import { IncomingMessage } from 'http';
 import * as winston from 'winston';
 
 const logger = winston.createLogger({
@@ -11,8 +12,7 @@ const logger = winston.createLogger({
   silent: process.env.NODE_ENV === 'test'
 });
 
-export type Logger = winston.Logger;
-export function getLogger(name ?: string):any {
+export function getLogger(name ?: string) {
   return logger.child({ name });
 }
 
@@ -51,6 +51,6 @@ export function isAsyncFunction(val: Function) {
   return val.constructor.name === 'AsyncFunction';
 }
 
-export function getDirName(u:string) {
-  return url.fileURLToPath(new URL('.', u));
+export function resolveBy(u:string, ...args: string[]): string {
+  return path.join(url.fileURLToPath(new URL('.', u)), ...args);
 }

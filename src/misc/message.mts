@@ -1,14 +1,13 @@
 import * as snappy from 'snappy';
-import { PushRequestPackage } from './push-request.js';
+import { PushRequestPackage } from './push-request.mjs';
 
 export const PushRequest = PushRequestPackage.PushRequest;
 export type IPushRequest = PushRequestPackage.IPushRequest;
 
-export function decode(raw: Buffer): IPushRequest  {
+export function unpack(raw: Buffer): IPushRequest  {
   const decompressed = snappy.uncompressSync(raw, {
     asBuffer: true
   }) as Buffer;
-
   return PushRequest.toObject(PushRequest.decode(decompressed), {
     longs: Number,
     enums: String,
@@ -16,11 +15,11 @@ export function decode(raw: Buffer): IPushRequest  {
   });
 }
 
-export function encode(logPayload: IPushRequest) {
+export function pack(logPayload: IPushRequest) {
   const err = PushRequest.verify(logPayload);
   if (err) {
     throw new Error(err);
   }
-  const packed = PushRequest.encode(logPayload).finish();
-  return snappy.compressSync(Buffer.from(packed));
+  const bin = PushRequest.encode(logPayload).finish();
+  return snappy.compressSync(Buffer.from(bin));
 }

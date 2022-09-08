@@ -5,4 +5,5 @@ cd src/misc
 # what the fuck
 sed -i 's|import \* as $protobuf|import $protobuf|' push-request.js
 sed -i 's|protobufjs/minimal|protobufjs/minimal.js|' push-request.js
-npx pbts -o push-request.d.ts push-request.js
+npx pbts -o push-request.d.mts push-request.js
+mv -f push-request.js push-request.mjs

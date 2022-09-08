@@ -1,21 +1,16 @@
-import { isMainThread, parentPort, workerData } from 'worker_threads';
-import * as utils from './misc/utils.js';
-import { ThreadMessage, IPushRequest, Config } from './misc/protocol.js';
-import { decode, encode } from './misc/message.js';
-import geoIpModule from './modules/geo-ip.js';
-
-
-const workerId = workerData ? workerData.workerId : 0;
-const logger = utils.getLogger(`worker-${workerId}`);
+import { isMainThread, parentPort, workerData, threadId } from 'worker_threads';
+import { utils, protocol, message } from './misc/index.mjs';
+import geoIpModule from './modules/geo-ip.mjs';
+const logger = utils.getLogger(`worker-${threadId}`);
 
 if (isMainThread || !workerData) {
   logger.error('worker is MainThread');
   process.exit(1);
 }
 
-const config:Config = workerData.config;
+const config:protocol.Config = workerData;
 
-type ModuleHandler = (data: IPushRequest, logger?: utils.Logger) => void;
+type ModuleHandler = (data: protocol.IPushRequest, logger?: protocol.Logger) => void;
 const handlers: ModuleHandler[] = [];
 
 function registerHandler(handler: ModuleHandler) {
@@ -42,11 +37,11 @@ async function processLogStream(raw: Buffer) {
   if (handlers.length === 0) {
     return raw;
   }
-  const logPayload = decode(raw);
+  const logPayload = message.unpack(raw);
   for (let i = 0; i < handlers.length; i += 1) {
     await handlers[i](logPayload, logger);
   }
-  return encode(logPayload);
+  return  message.pack(logPayload);
 }
 
 if (!parentPort) {
@@ -54,7 +49,7 @@ if (!parentPort) {
   process.exit(1);
 }
 
-parentPort.on('message', async function({ data, id, type }: ThreadMessage) {
+parentPort.on('message', async function({ data, id, type }: protocol.ThreadMessage) {
   if (type === 'DATA_INPUT') {
     let retData = null;
 
@@ -73,16 +68,12 @@ parentPort.on('message', async function({ data, id, type }: ThreadMessage) {
       logger.error('invalid input type');
     }
 
-    const msg: ThreadMessage = {
+    const msg: protocol.ThreadMessage = {
       id,
       type: 'DATA_OUTPUT',
       data: retData
     };
 
     parentPort?.postMessage(msg, retData ? [ retData.buffer ] : undefined);
-  }
-  if (type === 'STOP_WORKER') {
-    logger.info('worker stopped');
-    process.exit();
   }
 });

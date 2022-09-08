@@ -1,16 +1,13 @@
 import * as snappy from 'snappy';
-
 import { strictEqual, throws, rejects } from 'node:assert';
-import { encode, decode, IPushRequest } from '../src/misc/message.js';
-import request from '../src/misc/request.js';
+import { message, request as reqMod, protocol } from '../src/misc/index.mjs';
 
-process.env.NODE_ENV = 'test';
-
+const request = reqMod.default;
 let appModule:any;
 
 describe('server test suite', function () {
   it('should server start', async function() {
-    appModule = await import('../src/index.js');
+    appModule = await import('../src/index.mjs');
     await request('http://localhost:3100/ready', {
       method: 'GET'
     });
@@ -32,27 +29,27 @@ describe('message test suite', function () {
   it('should reject invalid input', async function() {
 
     throws(() => {
-      decode(Buffer.from('Foo'));
+      message.unpack(Buffer.from('Foo'));
     }, (e:Error) => e.message.includes('snappy: corrupt input'))
 
     throws(() => {
-      decode(snappy.compressSync(Buffer.from('lazydog')));
+      message.unpack(snappy.compressSync(Buffer.from('lazydog')));
     });
 
     throws(() => {
-      decode(snappy.compressSync(Buffer.from(new Uint8Array([256]))));
+      message.unpack(snappy.compressSync(Buffer.from(new Uint8Array([256]))));
     });
 
     throws(
       () => {
-        encode({ streams: 1 } as any);
+        message.pack({ streams: 1 } as any);
       },
       (e:Error) => e.message.includes('streams:')
     );
 
     throws(
       () => {
-        encode({
+        message.pack({
           streams: [{
             labels: -1
           }]
@@ -70,7 +67,7 @@ describe('message test suite', function () {
             }]
           }]
         } as any;
-        encode(payload);
+        message.pack(payload);
       },
       (e:Error) => e.message.includes('streams.entries.line:')
     );
@@ -78,7 +75,7 @@ describe('message test suite', function () {
   });
 
   it('should encode and decode', async function() {
-    const payload:IPushRequest = {
+    const payload: protocol.IPushRequest = {
       streams: [{
         hash: 0,
         labels: 'bar',
@@ -87,7 +84,7 @@ describe('message test suite', function () {
         }]
       }]
     };
-    const ret = decode(encode(payload));
+    const ret = message.unpack(message.pack(payload));
     strictEqual(ret.streams?.length, 1);
     strictEqual(ret.streams?.[0].hash, 0);
     strictEqual(ret.streams?.[0].entries?.[0].line, 'foo');
@@ -116,7 +113,7 @@ describe('e2e test suite', function () {
   it('should proxy request', async function() {
     const resp = await request('http://localhost:3100/loki/api/v1/push', {
       method: 'POST',
-      body: encode(payload),
+      body: message.pack(payload),
       headers: {
         'user-agent': 'my-test-agent',
         'content-type': 'application/x-protobuf'
@@ -128,7 +125,7 @@ describe('e2e test suite', function () {
     strictEqual(headers['content-type'], 'application/x-protobuf');
     strictEqual(headers['user-agent'], 'my-test-agent');
 
-    const ret = decode(Buffer.from(rawInHex, 'hex'));
+    const ret = message.unpack(Buffer.from(rawInHex, 'hex'));
 
     strictEqual(ret.streams?.[0].hash, 0);
     strictEqual(ret.streams?.[1].entries?.[1].line, 'bar2');
@@ -140,13 +137,13 @@ describe('e2e test suite', function () {
 
     const resp = await request('http://localhost:3100/loki/api/v1/push', {
       method: 'POST',
-      body: encode(payload),
+      body: message.pack(payload),
       headers: {
         'content-type': 'application/x-protobuf'
       }
     });
     const { rawInHex } = resp.data.$echo;
-    const ret = decode(Buffer.from(rawInHex, 'hex')) as (typeof payload);
+    const ret = message.unpack(Buffer.from(rawInHex, 'hex')) as (typeof payload);
     strictEqual(ret.streams[0].entries[0].line.includes('geo_ip_longitude='), true);
     strictEqual(ret.streams[1].entries[1].line.includes('geo_ip_country='), true);
   });

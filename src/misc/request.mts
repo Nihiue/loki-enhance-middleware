@@ -1,13 +1,9 @@
 import fetch from 'node-fetch';
 import { RequestInit } from 'node-fetch';
-import { LokiSender } from './protocol.js';
+import { LokiSender } from './protocol.mjs';
 
 export default async function request(url: string, opts: RequestInit) {
   const resp = await fetch(url, opts);
-
-  if (!resp.ok) {
-    throw new Error(`request failed with status ${resp.status}`);
-  }
 
   const contentType = resp.headers.get('content-type') || '';
   let data: Object | string | any;
@@ -20,11 +16,19 @@ export default async function request(url: string, opts: RequestInit) {
     data = Buffer.from(await resp.arrayBuffer());
   }
 
-  return {
+  const response = {
     contentType,
     data,
     status: resp.status
   };
+
+  if (!resp.ok) {
+    const error:any = new Error(`request failed with status ${resp.status}`);
+    error.response = response;
+    throw error;
+  }
+
+  return response;
 }
 
 export function getLokiSender(loki_host: string, logger:any): LokiSender {

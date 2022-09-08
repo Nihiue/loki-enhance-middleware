@@ -1,8 +1,11 @@
-export { IPushRequest } from './message.js';
+export { IPushRequest } from './message.mjs';
+import * as winston from 'winston';
+
+export type Logger = winston.Logger;
 
 export interface ThreadMessage {
-  type: 'DATA_INPUT' | 'DATA_OUTPUT' | 'STOP_WORKER';
-  data: Uint8Array | Buffer | Record<string, any> | null;
+  type: 'DATA_INPUT' | 'DATA_OUTPUT';
+  data: Uint8Array | Buffer | null;
   id?: number;
 };
 
@@ -16,5 +19,3 @@ export type Config = {
   listen_port: number;
   enabled_modules: string;
 };
-
-

@@ -1,16 +1,13 @@
 import { Worker, isMainThread } from 'worker_threads';
-import { ThreadMessage, RequestDisptcher, Config } from './misc/protocol.js';
-import * as path from 'path';
-
-import * as utils from './misc/utils.js';
+import { protocol, utils } from './misc/index.mjs';
 
 const logger = utils.getLogger('dispatcher');
-const workerFilePath = path.join(utils.getDirName(import.meta.url), 'worker.js');
+const workerFilePath = utils.resolveBy(import.meta.url, 'worker.mjs');
 const pendingJobs: Map<number, Function> = new Map();
 const workers: Worker[] = [];
 let jobIdCounter = 0;
 
-function workerMsgHandler({ type, id, data }: ThreadMessage) {
+function workerMsgHandler({ type, id, data }: protocol.ThreadMessage) {
   if (typeof id === 'number' && type === 'DATA_OUTPUT' && pendingJobs.has(id)) {
 
     if (utils.isUint8Array(data)) {
@@ -23,7 +20,7 @@ function workerMsgHandler({ type, id, data }: ThreadMessage) {
   }
 }
 
-export const dispatchProcessReq:RequestDisptcher = function (raw: any) {
+export const dispatch: protocol.RequestDisptcher = function (raw: any) {
     if (workers.length === 0) {
       logger.error('no workers');
       return null;
@@ -42,7 +39,7 @@ export const dispatchProcessReq:RequestDisptcher = function (raw: any) {
 
     return new Promise<Buffer|null>(function(resolve, reject) {
       pendingJobs.set(id, resolve);
-      const msg: ThreadMessage = {
+      const msg: protocol.ThreadMessage = {
         type: 'DATA_INPUT',
         id,
         data: raw
@@ -51,7 +48,7 @@ export const dispatchProcessReq:RequestDisptcher = function (raw: any) {
     });
   }
 
-export function initDispatcher(config: Config) {
+export function init(config: protocol.Config) {
   if (!isMainThread) {
     logger.error('dispatcher must run in MainThread');
     process.exit(1);
@@ -59,28 +56,15 @@ export function initDispatcher(config: Config) {
 
   while (workers.length < config.worker_count) {
     const wkr = new Worker(workerFilePath, {
-      workerData: {
-        workerId: workers.length,
-        config,
-      }
+      workerData: config
     });
     wkr.on('message', workerMsgHandler);
-    wkr.on('exit', function () {
-      const idx = workers.indexOf(wkr);
-      if (idx > -1) {
-        workers.splice(idx, 1);
-      }
-    });
     workers.push(wkr);
   }
 
-  return function() {
-    const stopMsg: ThreadMessage =  {
-      type: 'STOP_WORKER',
-      data: {
-        reason: 'shutdown'
-      }
-    }
-    workers.forEach(wk => wk.postMessage(stopMsg));
+  return function kill() {
+    workers.forEach(wk => wk.terminate());
+    workers.splice(0, workers.length);
+    logger.info('dispatcher stopped');
   };
 }

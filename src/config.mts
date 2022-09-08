@@ -1,4 +1,4 @@
-import { Config } from "./misc/protocol.js";
+import { protocol } from "./misc/index.mjs";
 
 const {
   WORKER_COUNT = '1',
@@ -7,7 +7,7 @@ const {
   ENABLED_MODULES = '*'
 } = process.env;
 
-const cfg:Config = {
+const cfg: protocol.Config = {
   loki_host: LOKI_HOST,
   worker_count: parseInt(WORKER_COUNT, 10),
   listen_port: parseInt(PORT, 10),

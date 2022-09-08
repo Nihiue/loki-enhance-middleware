@@ -1,22 +1,18 @@
 import maxmind from 'maxmind';
-import * as path from 'path';
 import LRU from 'tiny-lru';
 import { Reader, AsnResponse, CityResponse } from 'maxmind';
-import { getDirName, Logger } from '../misc/utils.js';
-import { IPushRequest } from '../misc/protocol.js';
+import { utils, protocol } from '../misc/index.mjs';
 
 let lookupCity: Reader<CityResponse> | null = null;
 let lookupASN: Reader<AsnResponse> | null = null;
 
-
-async function init(logger: Logger) {
+async function init(logger: protocol.Logger) {
   if (lookupCity) {
     return;
   }
 
-  const dbRoot = path.join(getDirName(import.meta.url), '../../../mmdb');
-  const cityFile = path.join(dbRoot, 'GeoLite2-City.mmdb');
-  const asnFile = path.join(dbRoot, 'GeoLite2-ASN.mmdb');
+  const cityFile = utils.resolveBy(import.meta.url, '../../../mmdb/', 'GeoLite2-City.mmdb');
+  const asnFile = utils.resolveBy(import.meta.url, '../../../mmdb/', 'GeoLite2-ASN.mmdb');
 
   const mmOption = {
     cache: {
@@ -92,7 +88,7 @@ function getGeoInfo(ip: string) {
 
 const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
-function handler(data: IPushRequest) {
+function handler(data: protocol.IPushRequest) {
   data.streams && data.streams.forEach(function(stream) {
     stream.entries && stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);
