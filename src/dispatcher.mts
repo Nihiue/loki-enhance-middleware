@@ -3,31 +3,37 @@ import { protocol, utils } from './misc/index.mjs';
 
 const logger = utils.getLogger('dispatcher');
 const workerFilePath = utils.resolveBy(import.meta.url, 'worker.mjs');
-const pendingJobs: Map<number, Function> = new Map();
+const pendingJobs: Map<number, {
+  resolve: Function;
+  reject: Function;
+}> = new Map();
 const workers: Worker[] = [];
 let jobIdCounter = 0;
 
-function workerMsgHandler({ type, id, data }: protocol.ThreadMessage) {
-  if (typeof id === 'number' && type === 'DATA_OUTPUT' && pendingJobs.has(id)) {
+function workerMsgHandler({ type, id, data, error }: protocol.ThreadMessage) {
+  if (type === 'DATA_OUTPUT' && typeof id === 'number') {
+    const record = pendingJobs.get(id);
 
+    if (!record) {
+      return;
+    }
+
+    pendingJobs.delete(id);
     if (utils.isUint8Array(data)) {
       data = Buffer.from(data);
     }
 
-    (pendingJobs.get(id) as Function)(data);
-    pendingJobs.delete(id);
-    return;
+    if (error) {
+      record.reject(new Error(error));
+    } else {
+      record.resolve(data);
+    }
   }
 }
 
 export const dispatch: protocol.RequestDisptcher = function (raw: any) {
     if (workers.length === 0) {
       logger.error('no workers');
-      return null;
-    }
-
-    if (!utils.isBuffer(raw)) {
-      logger.error('input is not Buffer');
       return null;
     }
 
@@ -38,7 +44,10 @@ export const dispatch: protocol.RequestDisptcher = function (raw: any) {
     }
 
     return new Promise<Buffer|null>(function(resolve, reject) {
-      pendingJobs.set(id, resolve);
+      pendingJobs.set(id, {
+        resolve,
+        reject
+      });
       const msg: protocol.ThreadMessage = {
         type: 'DATA_INPUT',
         id,

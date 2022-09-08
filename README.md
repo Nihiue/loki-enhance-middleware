@@ -5,7 +5,7 @@
 
 `loki-enhance-middleware` hijacks log push requests sent to loki and modifies it.
 
-## Moudle - Geo IP
+## Module - Geo IP
 
 Injects GeoIP info for any log source.
 

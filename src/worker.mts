@@ -51,8 +51,11 @@ if (!parentPort) {
 
 parentPort.on('message', async function({ data, id, type }: protocol.ThreadMessage) {
   if (type === 'DATA_INPUT') {
-    let retData = null;
-
+    const retMsg: protocol.ThreadMessage = {
+      id,
+      type: 'DATA_OUTPUT',
+      data: null
+    };
     if (utils.isUint8Array(data)) {
       data = Buffer.from(data);
     }
@@ -60,20 +63,18 @@ parentPort.on('message', async function({ data, id, type }: protocol.ThreadMessa
     if (utils.isBuffer(data)) {
       try {
         await untilModulesLoaded;
-        retData = await processLogStream(data);
+        retMsg.data = await processLogStream(data);
       } catch (e) {
-        logger.error('error when processLogStream', e.message);
+        retMsg.error = 'processLogStream error: ' + e.message;
       }
     } else {
-      logger.error('invalid input type');
+      retMsg.error = 'invalid input type';
     }
 
-    const msg: protocol.ThreadMessage = {
-      id,
-      type: 'DATA_OUTPUT',
-      data: retData
-    };
+    if (retMsg.error) {
+      logger.error(retMsg.error);
+    }
 
-    parentPort?.postMessage(msg, retData ? [ retData.buffer ] : undefined);
+    parentPort?.postMessage(retMsg, retMsg.data ? [ retMsg.data.buffer ] : undefined);
   }
 });

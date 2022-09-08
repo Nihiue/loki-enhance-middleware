@@ -7,6 +7,7 @@ export interface ThreadMessage {
   type: 'DATA_INPUT' | 'DATA_OUTPUT';
   data: Uint8Array | Buffer | null;
   id?: number;
+  error?: string;
 };
 
 export type RequestDisptcher = (raw: Buffer) => Promise<Buffer|null> | null;
