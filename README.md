@@ -55,7 +55,7 @@ Injects GeoIP info for any log source
 
 Powered by [maxmind](https://www.maxmind.com/) and [maxmind-npm](https://www.npmjs.com/package/maxmind)
 
-![GeoIP](https://user-images.githubusercontent.com/5763301/189409984-d8cf6655-dff9-475d-9fd2-a42562e4611f.jpg)
+![GeoIP](https://user-images.githubusercontent.com/5763301/189410537-f77d2f7e-0838-4352-9cc5-140740803177.png)
 
 `promtail-config.yaml`
 ```yaml
