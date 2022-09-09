@@ -55,7 +55,7 @@ Injects GeoIP info for any log source
 
 Powered by [maxmind](https://www.maxmind.com/) and [maxmind-npm](https://www.npmjs.com/package/maxmind)
 
-![未标题-1](https://user-images.githubusercontent.com/5763301/188595103-5719c66c-b94b-40ec-ad49-9e4cf66f07b8.png)
+![GeoIP](https://user-images.githubusercontent.com/5763301/189409984-d8cf6655-dff9-475d-9fd2-a42562e4611f.jpg)
 
 `promtail-config.yaml`
 ```yaml
@@ -98,6 +98,8 @@ Parse user_agent field to structure data.
 
 Powered by [device-detector-js](https://www.npmjs.com/package/device-detector-js)
 
+![UA](https://user-images.githubusercontent.com/5763301/189410148-6942d6f8-0ada-4229-8618-193248eeb432.png)
+
 Placeholder: `Device_UA_Source="[UA]"`
 
 ```
@@ -107,5 +109,5 @@ Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (K
 Result
 
 ```
-ua_client="Chrome Mobile, 90.0" ua_device="Google, Pixel 5" ua_os="Android, 11.0"
+ua_client="Chrome Mobile;90.0" ua_device="Google;Pixel 5" ua_os="Android;11.0"
 ```
