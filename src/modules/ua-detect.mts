@@ -16,13 +16,13 @@ function genUAResult (ua: string) {
     ret.bot = parsed.bot.name;
   }
   if (parsed.client) {
-    ret.client = `${parsed.client?.name}, ${parsed.client.version}`;
+    ret.client = `${parsed.client?.name || parsed.client.type};${parsed.client.version}`;
   }
   if (parsed.device) {
-    ret.device = `${parsed.device?.brand}, ${parsed.device.model}`;
+    ret.device = `${parsed.device?.brand  || parsed.device.type };${parsed.device.model}`;
   }
   if (parsed.os) {
-    ret.os = `${parsed.os.name}, ${parsed.os.version ||parsed.os.platform}`;
+    ret.os = `${parsed.os.name || parsed.os.platform};${parsed.os.version}`;
   }
 
   return Object.keys(ret).map(k => `ua_${k}="${ret[k]}"`).join(' ');
