@@ -1,80 +1,71 @@
-import { isMainThread, parentPort, workerData, threadId } from 'worker_threads';
-import { utils, protocol, message } from './misc/index.mjs';
+import { utils, workerPool, message } from './misc/index.mjs';
+import { Config } from './config.mjs';
+export type ModuleImp = (data: message.IPushRequest, logger?: utils.Logger) => void;
+
 import geoIpModule from './modules/geo-ip.mjs';
-const logger = utils.getLogger(`worker-${threadId}`);
 
-if (isMainThread || !workerData) {
-  logger.error('worker is MainThread');
-  process.exit(1);
-}
+class ModuleManager {
+  modules: ModuleImp[] = [];
+  loadPromise: Promise<void> | null = null;
+  constructor(enabled_modules: string) {
+    this.loadPromise = this.loadModules(enabled_modules);
 
-const config:protocol.Config = workerData;
-
-type ModuleHandler = (data: protocol.IPushRequest, logger?: protocol.Logger) => void;
-const handlers: ModuleHandler[] = [];
-
-function registerHandler(handler: ModuleHandler) {
-  if (utils.isAsyncFunction(handler)) {
-    throw new Error('handler must be synchronous');
-  }
-  handlers.push(handler);
-}
-
-async function loadModules() {
-  const enabled = config.enabled_modules;
-
-  if (enabled === '*' || enabled.includes('geo-ip')) {
-    await geoIpModule.init(logger);
-    registerHandler(geoIpModule.handler)
-  }
-
-  logger.info('worker ready');
-}
-
-const untilModulesLoaded = loadModules();
-
-async function processLogStream(raw: Buffer) {
-  if (handlers.length === 0) {
-    return raw;
-  }
-  const logPayload = message.unpack(raw);
-  for (let i = 0; i < handlers.length; i += 1) {
-    await handlers[i](logPayload, logger);
-  }
-  return  message.pack(logPayload);
-}
-
-if (!parentPort) {
-  logger.error('parentPort not exists');
-  process.exit(1);
-}
-
-parentPort.on('message', async function({ data, id, type }: protocol.ThreadMessage) {
-  if (type === 'DATA_INPUT') {
-    const retMsg: protocol.ThreadMessage = {
-      id,
-      type: 'DATA_OUTPUT',
-      data: null
-    };
-    if (utils.isUint8Array(data)) {
-      data = Buffer.from(data);
-    }
-
-    if (utils.isBuffer(data)) {
-      try {
-        await untilModulesLoaded;
-        retMsg.data = await processLogStream(data);
-      } catch (e) {
-        retMsg.error = 'processLogStream error: ' + e.message;
+    workerEntry.registerHandler(async (type, payload) => {
+      let ret: workerPool.Payload = null;
+      await this.loadPromise;
+      switch (type) {
+        case 'log-stream':
+          if (utils.isBuffer(payload)) {
+            ret = await this.processLogStream(payload);
+          } else {
+            throw new Error('log-stream: invalid payload type')
+          }
+          break;
+        case 'test':
+          const testParams = payload as Record<string, string>;
+          if (testParams.action === 'geo_info') {
+            ret = {
+              geoInfo: geoIpModule.getGeoInfo(testParams['ip'])
+            }
+          }
+          break;
       }
-    } else {
-      retMsg.error = 'invalid input type';
-    }
-
-    if (retMsg.error) {
-      logger.error(retMsg.error);
-    }
-
-    parentPort?.postMessage(retMsg, retMsg.data ? [ retMsg.data.buffer ] : undefined);
+      return ret;
+    });
   }
-});
+
+  addModule(module: ModuleImp) {
+    if (utils.isAsyncFunction(module)) {
+      throw new Error('module must be synchronous');
+    }
+    this.modules.push(module);
+  }
+
+  async loadModules(enabled: string) {
+    if (enabled === '*' || enabled.includes('geo-ip')) {
+      await geoIpModule.init(logger);
+      this.addModule(geoIpModule.entry)
+    }
+    logger.info('worker ready');
+  }
+
+  async processLogStream(raw: Buffer) {
+    const { modules } = this;
+    if (modules.length === 0) {
+      return raw;
+    }
+    const logPayload = message.unpack(raw);
+    for (let i = 0; i < modules.length; i += 1) {
+      await modules[i](logPayload, logger);
+    }
+    return message.pack(logPayload);
+  }
+
+
+}
+
+const workerEntry = new workerPool.WorkerEntry();
+const logger = utils.getLogger(`worker-${workerEntry.workerId}`);
+const config:Config = workerEntry.getWorkerData();
+
+new ModuleManager(config.enabled_modules);

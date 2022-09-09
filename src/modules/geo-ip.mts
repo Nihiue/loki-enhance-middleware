@@ -1,12 +1,13 @@
 import maxmind from 'maxmind';
 import LRU from 'tiny-lru';
 import { Reader, AsnResponse, CityResponse } from 'maxmind';
-import { utils, protocol } from '../misc/index.mjs';
+import { utils } from '../misc/index.mjs';
+import { ModuleImp } from '../worker.mjs';
 
 let lookupCity: Reader<CityResponse> | null = null;
 let lookupASN: Reader<AsnResponse> | null = null;
 
-async function init(logger: protocol.Logger) {
+async function init(logger: utils.Logger) {
   if (lookupCity) {
     return;
   }
@@ -88,7 +89,7 @@ function getGeoInfo(ip: string) {
 
 const geoRegx = /GeoIP_Source=([\w:.]+)/;
 
-function handler(data: protocol.IPushRequest) {
+const entry:ModuleImp = function handler(data) {
   data.streams && data.streams.forEach(function(stream) {
     stream.entries && stream.entries.forEach(function(entry) {
       const res = entry.line && entry.line.match(geoRegx);
@@ -102,5 +103,6 @@ function handler(data: protocol.IPushRequest) {
 
 export default {
   init,
-  handler
+  entry,
+  getGeoInfo
 };

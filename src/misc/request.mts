@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import { RequestInit } from 'node-fetch';
-import { LokiSender } from './protocol.mjs';
 
 export default async function request(url: string, opts: RequestInit) {
   const resp = await fetch(url, opts);
@@ -30,32 +29,3 @@ export default async function request(url: string, opts: RequestInit) {
 
   return response;
 }
-
-export function getLokiSender(loki_host: string, logger:any): LokiSender {
-  if (process.env.NODE_ENV === 'test') {
-    logger.warn('test env, using echo sender');
-    return function echoSender(raw, headers) {
-      return new Promise((resolve, reject) => {
-        resolve({
-          status: 200,
-          data: JSON.stringify({
-            $echo: {
-              rawInHex: raw.toString('hex'),
-              headers
-            }
-          }),
-          contentType: 'application/json'
-        });
-      })
-    }
-  }
-
-  return function proxySender(raw, headers) {
-    return request(`${loki_host}/loki/api/v1/push`, {
-     body: raw,
-     method: 'POST',
-     headers: headers || {}
-   });
-  }
-}
-

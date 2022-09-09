@@ -54,3 +54,18 @@ export function isAsyncFunction(val: Function) {
 export function resolveBy(u:string, ...args: string[]): string {
   return path.join(url.fileURLToPath(new URL('.', u)), ...args);
 }
+
+export function pick(data: Record<string, any>, props: [string, any][]) {
+  const ret:Record<string, any> = {};
+  for (let i = 0; i < props.length; i += 1) {
+    const [k, d] = props[i];
+    if (typeof data[k] === 'undefined') {
+      ret[k] = d;
+    } else {
+      ret[k] = data[k];
+    }
+  }
+  return ret;
+}
+
+export type Logger = winston.Logger;

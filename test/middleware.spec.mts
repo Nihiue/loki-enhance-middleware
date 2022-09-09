@@ -1,13 +1,10 @@
 import * as snappy from 'snappy';
 import { strictEqual, throws, rejects } from 'node:assert';
-import { message, request as reqMod, protocol } from '../src/misc/index.mjs';
-
-const request = reqMod.default;
-let appModule:any;
+import { message, request } from '../src/misc/index.mjs';
+import { shutdown } from '../src/index.mjs'
 
 describe('server test suite', function () {
   it('should server start', async function() {
-    appModule = await import('../src/index.mjs');
     await request('http://localhost:3100/ready', {
       method: 'GET'
     });
@@ -75,7 +72,7 @@ describe('message test suite', function () {
   });
 
   it('should encode and decode', async function() {
-    const payload: protocol.IPushRequest = {
+    const payload: message.IPushRequest = {
       streams: [{
         hash: 0,
         labels: 'bar',
@@ -89,6 +86,23 @@ describe('message test suite', function () {
     strictEqual(ret.streams?.[0].hash, 0);
     strictEqual(ret.streams?.[0].entries?.[0].line, 'foo');
   });
+});
+
+describe('module unit test', async function() {
+  it('should proxy request', async function() {
+    const resp = await request('http://localhost:3100/x/unit-test?action=geo_info&ip=114.92.1.1', {
+      method: 'GET'
+    });
+    const info = resp.data.geoInfo;
+    strictEqual([
+      'geo_ip_asn=',
+      'geo_ip_city_geoname_id=',
+      'geo_ip_country_iso_code=',
+      'geo_ip_longitude=',
+      'geo_ip_city='
+    ].every(s => info.includes), true);
+  });
+
 });
 
 describe('e2e test suite', function () {
@@ -151,6 +165,6 @@ describe('e2e test suite', function () {
 
 describe('clean up', function() {
   it('should exit', async function() {
-    appModule.shutdown();
+    shutdown();
   });
 })
