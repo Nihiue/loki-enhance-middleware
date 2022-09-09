@@ -89,7 +89,7 @@ describe('message test suite', function () {
 });
 
 describe('module unit test', async function() {
-  it('should proxy request', async function() {
+  it('should get geo info', async function() {
     const resp = await request('http://localhost:3100/x/unit-test?action=geo_info&ip=114.92.1.1', {
       method: 'GET'
     });
