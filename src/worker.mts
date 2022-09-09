@@ -3,6 +3,7 @@ import { Config } from './config.mjs';
 export type ModuleImp = (data: message.IPushRequest, logger?: utils.Logger) => void;
 
 import geoIpModule from './modules/geo-ip.mjs';
+import uaDetectModule from './modules/ua-detect.mjs';
 
 class ModuleManager {
   modules: ModuleImp[] = [];
@@ -28,6 +29,11 @@ class ModuleManager {
               geoInfo: geoIpModule.getGeoInfo(testParams['ip'])
             }
           }
+          if (testParams.action === 'ua_info') {
+            ret = {
+              uaInfo: uaDetectModule.getUAInfo(testParams['ua'])
+            }
+          }
           break;
       }
       return ret;
@@ -45,6 +51,9 @@ class ModuleManager {
     if (enabled === '*' || enabled.includes('geo-ip')) {
       await geoIpModule.init(logger);
       this.addModule(geoIpModule.entry)
+    }
+    if (enabled === '*' || enabled.includes('ua-detect')) {
+      this.addModule(uaDetectModule.entry);
     }
     logger.info('worker ready');
   }

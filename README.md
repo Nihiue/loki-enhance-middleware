@@ -5,15 +5,9 @@
 
 `loki-enhance-middleware` hijacks log push requests sent to loki and modifies it.
 
-## Module - Geo IP
 
-Injects GeoIP info for any log source.
+## Deploy
 
-![未标题-1](https://user-images.githubusercontent.com/5763301/188595103-5719c66c-b94b-40ec-ad49-9e4cf66f07b8.png)
-
-### Setup
-
-Deploy middleware with loki.
 
 `docker-compose.yaml`
 ```yaml
@@ -39,7 +33,12 @@ services:
         - 3100
 ```
 
-Config logagent to add `GeoIP_Source=[IP]` placeholder and send requests to middleware.
+## Config LogAgent
+
+ LogAgent Should:
+
+ * Send requests to middleware
+ * Add `placeholder` for middle to process, see `Module - Geo IP` for example
 
 `promtail-config.yaml`
 ```yaml
@@ -47,8 +46,19 @@ Config logagent to add `GeoIP_Source=[IP]` placeholder and send requests to midd
 clients:
   - url: http://enhance_middleware:3100/loki/api/v1/push
 
-# ...
+```
 
+
+## Module - Geo IP
+
+Injects GeoIP info for any log source
+
+Powered by [maxmind](https://www.maxmind.com/) and [maxmind-npm](https://www.npmjs.com/package/maxmind)
+
+![未标题-1](https://user-images.githubusercontent.com/5763301/188595103-5719c66c-b94b-40ec-ad49-9e4cf66f07b8.png)
+
+`promtail-config.yaml`
+```yaml
 scrape_configs:
   - job_name: caddy
     pipeline_stages:
@@ -60,6 +70,7 @@ scrape_configs:
             method: request.method
             url: request.uri
             remote_addr: request.remote_addr
+
       - labels:
           level:
           status:
@@ -73,9 +84,28 @@ scrape_configs:
           source: output_msg
 ```
 
-`GeoIP_Source=[IP]` will be replaced by geo-ip fileds.
+`GeoIP_Source=[IP]` in log line is placeholder, and it will be replaced by geo-ip fileds.
 
 ```
 geo_ip_asn="HostSlick" geo_ip_continent="North America" geo_ip_city="Ashburn" geo_ip_city_geoname_id="4744870" geo_ip_country="United States" geo_ip_country_geoname_id="6252001" geo_ip_country_iso_code="US" geo_ip_latitude="39.018" geo_ip_longitude="-77.539"
 
+```
+
+
+## Module - UserAgent Detect
+
+Parse user_agent field to structure data.
+
+Powered by [device-detector-js](https://www.npmjs.com/package/device-detector-js)
+
+Placeholder: `Device_UA_Source="[UA]"`
+
+```
+Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36"
+```
+
+Result
+
+```
+ua_client="Chrome Mobile, 90.0" ua_device="Google, Pixel 5" ua_os="Android, 11.0"
 ```

@@ -103,6 +103,20 @@ describe('module unit test', async function() {
     ].every(s => info.includes), true);
   });
 
+  it('should get ua info', async function() {
+    const ua = 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36';
+    const resp = await request(`http://localhost:3100/x/unit-test?action=ua_info&ua=${encodeURIComponent(ua)}`, {
+      method: 'GET'
+    });
+    const info = resp.data.uaInfo;
+    console.log(info);
+    strictEqual([
+      'ua_client==',
+      'ua_device=',
+      'ua_os='
+    ].every(s => info.includes), true);
+  });
+
 });
 
 describe('e2e test suite', function () {
@@ -145,9 +159,9 @@ describe('e2e test suite', function () {
     strictEqual(ret.streams?.[1].entries?.[1].line, 'bar2');
   });
 
-  it('should injects geoIP info', async function() {
-    payload.streams[0].entries[0].line = 'foo=bar GeoIP_Source=114.92.1.1';
-    payload.streams[1].entries[1].line = 'foo=bar GeoIP_Source=52.144.59.143';
+  it('should injects geoIP & UA info', async function() {
+    payload.streams[0].entries[0].line = 'foo=bar GeoIP_Source=114.92.1.1 Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36"';
+    payload.streams[1].entries[1].line = 'foo=bar GeoIP_Source=52.144.59.143 Device_UA_Source="Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"';
 
     const resp = await request('http://localhost:3100/loki/api/v1/push', {
       method: 'POST',
@@ -159,7 +173,11 @@ describe('e2e test suite', function () {
     const { rawInHex } = resp.data.$echo;
     const ret = message.unpack(Buffer.from(rawInHex, 'hex')) as (typeof payload);
     strictEqual(ret.streams[0].entries[0].line.includes('geo_ip_longitude='), true);
+    strictEqual(ret.streams[0].entries[0].line.includes('ua_client='), true);
+
     strictEqual(ret.streams[1].entries[1].line.includes('geo_ip_country='), true);
+    strictEqual(ret.streams[1].entries[1].line.includes('ua_client='), true);
+
   });
 });
 

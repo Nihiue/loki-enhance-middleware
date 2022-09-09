@@ -16,6 +16,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "device-detector-js": "^3.0.3",
     "koa": "^2.13.4",
     "maxmind": "^4.3.6",
     "node-fetch": "^3.2.10",
