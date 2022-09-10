@@ -9,9 +9,10 @@ export interface ModuleImp {
   init: (lg: utils.Logger) => Promise<any>;
 }
 
-interface LoadedModule extends ModuleImp {
-  cache: Lru<string>;
+interface LoadedModule {
+  name: string;
   regx: RegExp;
+  handler: (fullMatch:string, value:string) => string;
 }
 
 type Payload = workerPool.Payload;
@@ -36,7 +37,7 @@ class ModuleManager {
     switch (type) {
       case 'log-stream':
         if (utils.isBuffer(payload)) {
-          ret = await this.processLog(payload);
+          ret = this.processLog(payload);
         } else {
           throw new Error('log-stream: invalid payload type')
         }
@@ -45,7 +46,7 @@ class ModuleManager {
         const testParams = (payload || {}) as Record<string, string>;
         const module = this.modules.find(m => m.name === testParams.name);
         ret = {
-          value: module ? module.replacer(testParams.input) : 'not_found'
+          value: module ? module.handler('', testParams.input) : 'not_found'
         }
         break;
     }
@@ -54,51 +55,57 @@ class ModuleManager {
 
   async loadModules(enabled: string) {
     for (let i = 0; i < moduleSource.length; i += 1) {
-      const source = moduleSource[i];
-      if (enabled === '*' || enabled.includes(source.name)) {
-        if (utils.isAsyncFunction(source.replacer)) {
+      const module = moduleSource[i];
+      if (enabled === '*' || enabled.includes(module.name)) {
+        if (utils.isAsyncFunction(module.replacer)) {
           logger.error('module replacer must be synchronous')
           continue;
         }
-        await source.init(logger);
-        this.modules.push(Object.assign({
-          cache: LRU<string>(1000, 0),
-          regx: new RegExp(`${source.matcher}="((\\"|[^"])+?)"`)
-        }, source));
+        await module.init(logger);
+        const mCache = LRU<string>(1000, 0);
+        this.modules.push({
+          name: module.name,
+          regx: new RegExp(`${module.matcher}="((\\"|[^"])+?)"`),
+          handler(fullMatch:string, input:string) {
+            let ret = mCache.get(input);
+            if (!ret) {
+              ret = module.replacer(input);
+              mCache.set(input, ret);
+            }
+            return ret;
+          }
+        });
       }
     }
     logger.info('modules ready');
   }
 
-  async processLog(raw: Buffer) {
+  processLog(raw: Buffer) {
     const { modules } = this;
     if (modules.length === 0) {
       return raw;
     }
     const logPayload = message.unpack(raw);
-    logPayload.streams && logPayload.streams.forEach(function(stream) {
-      stream.entries && stream.entries.forEach(function(entry) {
-        if (!entry.line) {
-          return;
-        }
-        modules.forEach(function(module) {
-          try {
-            entry.line = entry.line?.replace(module.regx, function(full, inputVal) {
-              let ret = module.cache.get(inputVal);
-              if (!ret) {
-                ret = module.replacer(inputVal);
-                module.cache.set(inputVal, ret);
-              }
-              return ret;
-            });
-          } catch (e) {
-            logger.error(e, 'processLog error');
+    if (!logPayload.streams) {
+      return raw;
+    }
+
+    for (const stream of logPayload.streams) {
+      if (!stream.entries) {
+        continue;
+      }
+      for (const entry of stream.entries) {
+        if (entry.line) {
+          for (const module of modules) {
+            try {
+              entry.line = entry.line.replace(module.regx, module.handler);
+            } catch (e) {
+              logger.error(e, 'processLog error');
+            }
           }
-        });
-      });
-    });
-
-
+        }
+      }
+    }
     return message.pack(logPayload);
   }
 }
