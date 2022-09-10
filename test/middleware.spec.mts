@@ -90,10 +90,10 @@ describe('message test suite', function () {
 
 describe('module unit test', async function() {
   it('should get geo info', async function() {
-    const resp = await request('http://localhost:3100/x/unit-test?action=geo_info&ip=114.92.1.1', {
+    const resp = await request('http://localhost:3100/x/unit-test?name=geo-ip&input=114.92.1.1', {
       method: 'GET'
     });
-    const info = resp.data.geoInfo;
+    const info = resp.data.value;
     strictEqual([
       'geo_ip_asn=',
       'geo_ip_city_geoname_id=',
@@ -105,11 +105,10 @@ describe('module unit test', async function() {
 
   it('should get ua info', async function() {
     const ua = 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36';
-    const resp = await request(`http://localhost:3100/x/unit-test?action=ua_info&ua=${encodeURIComponent(ua)}`, {
+    const resp = await request(`http://localhost:3100/x/unit-test?name=ua-detect&input=${encodeURIComponent(ua)}`, {
       method: 'GET'
     });
-    const info = resp.data.uaInfo;
-    console.log(info);
+    const info = resp.data.value;
     strictEqual([
       'ua_client==',
       'ua_device=',
@@ -160,8 +159,8 @@ describe('e2e test suite', function () {
   });
 
   it('should injects geoIP & UA info', async function() {
-    payload.streams[0].entries[0].line = 'foo=bar GeoIP_Source=114.92.1.1 Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36"';
-    payload.streams[1].entries[1].line = 'foo=bar GeoIP_Source=52.144.59.143 Device_UA_Source="Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"';
+    payload.streams[0].entries[0].line = 'foo=bar GeoIP_Source="114.92.1.1" Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36"';
+    payload.streams[1].entries[1].line = 'foo=bar GeoIP_Source="52.144.59.143" Device_UA_Source="Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1"';
 
     const resp = await request('http://localhost:3100/loki/api/v1/push', {
       method: 'POST',

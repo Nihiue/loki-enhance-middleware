@@ -1,5 +1,4 @@
 import maxmind from 'maxmind';
-import LRU from 'tiny-lru';
 import { Reader, AsnResponse, CityResponse } from 'maxmind';
 import { utils } from '../misc/index.mjs';
 import { ModuleImp } from '../worker.mjs';
@@ -34,8 +33,12 @@ async function init(logger: utils.Logger) {
   }
 }
 
-function genGeoStr (ip: string) {
-  if (!ip || !lookupASN || !lookupCity) {
+function replacer (ip: string) {
+  if (!lookupCity || !lookupASN) {
+    throw new Error('maxmind: db not ready');
+  }
+
+  if (!ip) {
     return '';
   }
 
@@ -73,36 +76,11 @@ function genGeoStr (ip: string) {
   return Object.keys(ret).map(k => `geo_ip_${k}="${ret[k]}"`).join(' ');
 }
 
-const geoInfoCache = LRU<string>(2000, 0);
-
-function getGeoInfo(ip: string) {
-  if (!lookupCity || !lookupASN) {
-    throw new Error('maxmind: db not ready');
-  }
-  let geoStr = geoInfoCache.get(ip);
-  if (!geoStr) {
-    geoStr = genGeoStr(ip);
-    geoInfoCache.set(ip, geoStr);
-  }
-  return geoStr;
-}
-
-const geoRegx = /GeoIP_Source=([\w:.]+)/;
-
-const entry:ModuleImp = function handler(data) {
-  data.streams && data.streams.forEach(function(stream) {
-    stream.entries && stream.entries.forEach(function(entry) {
-      const res = entry.line && entry.line.match(geoRegx);
-      if (res && entry.line) {
-        const geoInfo = getGeoInfo(res[1].toLowerCase());
-        entry.line = entry.line.replace(geoRegx, geoInfo);
-      }
-    });
-  });
-}
-
-export default {
-  init,
-  entry,
-  getGeoInfo
+const module:ModuleImp = {
+  name: 'geo-ip',
+  matcher: 'GeoIP_Source',
+  replacer,
+  init
 };
+
+export default module;

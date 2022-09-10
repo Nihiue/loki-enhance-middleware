@@ -35,10 +35,10 @@ services:
 
 ## Config LogAgent
 
- LogAgent Should:
+ LogAgent needs to:
 
  * Send requests to middleware
- * Add `placeholder` for middle to process, see `Module - Geo IP` for example
+ * Add `placeholder` to log line for middle to process, see `Module - Geo IP` for example
 
 `promtail-config.yaml`
 ```yaml
@@ -78,16 +78,24 @@ scrape_configs:
 
       - template:
           source: output_msg
-          template: 'url="{{ .url }}" host="{{ .host }}" GeoIP_Source={{.remote_addr }}'
+          template: 'url="{{ .url }}" host="{{ .host }}" GeoIP_Source="{{.remote_addr }}"'
 
       - output:
           source: output_msg
 ```
 
-`GeoIP_Source=[IP]` in log line is placeholder, and it will be replaced by geo-ip fileds.
+`GeoIP_Source="[IP]"` is the placeholder, and it will be replaced by geo-ip fileds.
+
+Log line
 
 ```
-geo_ip_asn="HostSlick" geo_ip_continent="North America" geo_ip_city="Ashburn" geo_ip_city_geoname_id="4744870" geo_ip_country="United States" geo_ip_country_geoname_id="6252001" geo_ip_country_iso_code="US" geo_ip_latitude="39.018" geo_ip_longitude="-77.539"
+foo=bar GeoIP_Source="22.22.22.22" abc=xyz
+```
+
+Result
+
+```
+foo=bar geo_ip_asn="HostSlick" geo_ip_continent="North America" geo_ip_city="Ashburn" geo_ip_city_geoname_id="4744870" geo_ip_country="United States" geo_ip_country_geoname_id="6252001" geo_ip_country_iso_code="US" geo_ip_latitude="39.018" geo_ip_longitude="-77.539" abc=xyz
 
 ```
 
@@ -101,6 +109,8 @@ Powered by [device-detector-js](https://www.npmjs.com/package/device-detector-js
 ![UA](https://user-images.githubusercontent.com/5763301/189410148-6942d6f8-0ada-4229-8618-193248eeb432.png)
 
 Placeholder: `Device_UA_Source="[UA]"`
+
+Log line
 
 ```
 Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36"
