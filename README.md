@@ -125,7 +125,7 @@ ua_client="Chrome Mobile;90.0" ua_device="Google;Pixel 5" ua_os="Android;11.0"
 Log line - Search Engine Bot
 
 ```
-Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+Device_UA_Source="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 ```
 
 Result
