@@ -110,7 +110,7 @@ Powered by [device-detector-js](https://www.npmjs.com/package/device-detector-js
 
 Placeholder: `Device_UA_Source="[UA]"`
 
-Log line
+Log line - Normal
 
 ```
 Device_UA_Source="Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36"
@@ -120,4 +120,16 @@ Result
 
 ```
 ua_client="Chrome Mobile;90.0" ua_device="Google;Pixel 5" ua_os="Android;11.0"
+```
+
+Log line - Search Engine Bot
+
+```
+Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+```
+
+Result
+
+```
+ua_bot="Googlebot"
 ```
