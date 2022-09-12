@@ -65,7 +65,7 @@ class ModuleManager {
         const mCache = LRU<string>(1000, 0);
         this.modules.push({
           name: module.name,
-          regx: new RegExp(`${module.matcher}="((\\"|[^"])+?)"`),
+          regx: new RegExp(`${module.matcher}="((\\"|[^"])*?)"`),
           handler(fullMatch:string, input:string) {
             let ret = mCache.get(input);
             if (!ret) {
