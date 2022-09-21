@@ -1,7 +1,6 @@
 import Koa from 'koa';
 import { utils, workerPool, request } from './misc/index.mjs';
 import { Config } from './config.mjs';
-import { Dispatcher } from './misc/worker-pool.mjs';
 const logger = utils.getLogger('server');
 
 export default function startServer(config: Config, dispatcher: workerPool.Dispatcher) {

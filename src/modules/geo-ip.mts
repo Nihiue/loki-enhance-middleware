@@ -1,7 +1,7 @@
 import maxmind from 'maxmind';
 import { Reader, AsnResponse, CityResponse } from 'maxmind';
 import { utils } from '../misc/index.mjs';
-import { ModuleImp } from '../worker.mjs';
+import { ModuleImp } from '../module-manager.mjs';
 
 let lookupCity: Reader<CityResponse> | null = null;
 let lookupASN: Reader<AsnResponse> | null = null;

@@ -1,5 +1,5 @@
 import DeviceDetector from 'device-detector-js';
-import { ModuleImp } from '../worker.mjs';
+import { ModuleImp } from '../module-manager.mjs';
 
 const deviceDetector = new DeviceDetector({
   versionTruncation: null
