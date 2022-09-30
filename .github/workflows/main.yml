@@ -42,9 +42,6 @@ jobs:
         - name: Run test
           run: pnpm run test
 
-        - name: Prune
-          run: pnpm prune --prod
-
   build:
     name: build
     needs: [ test ]
