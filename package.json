@@ -20,7 +20,7 @@
     "koa": "^2.13.4",
     "maxmind": "^4.3.6",
     "node-fetch": "^3.2.10",
-    "protobufjs": "^7.1.0",
+    "protobufjs": "^7.2.4",
     "snappy": "^7.1.2",
     "tiny-lru": "^8.0.2",
     "winston": "^3.8.2"
