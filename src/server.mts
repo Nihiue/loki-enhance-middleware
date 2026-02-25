@@ -84,8 +84,13 @@ function logHandlerFactory(dispatcher: workerPool.Dispatcher, config: Config) {
         ctx.body = e.response.data;
         ctx.status = e.response.status;
       } else {
-        logger.error('Unable to proxy request', e.message);
+        // Keep details visible (especially during tests)
+        logger.error('Unable to proxy request', e?.message, e?.stack);
         ctx.status = 500;
+        if (process.env.NODE_ENV === 'test') {
+          ctx.set('content-type', 'text/plain');
+          ctx.body = e?.stack || e?.message || String(e);
+        }
       }
     }
   };
