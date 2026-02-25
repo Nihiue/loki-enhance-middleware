@@ -2,8 +2,10 @@ npx pbjs --sparse --es6 -t static-module -w es6 -o src/misc/push-request.js -p p
 
 cd src/misc
 
-# what the fuck
-sed -i 's|import \* as $protobuf|import $protobuf|' push-request.js
-sed -i 's|protobufjs/minimal|protobufjs/minimal.js|' push-request.js
+# Portable in-place edits (GNU sed vs BSD sed)
+sed -i.bak 's|import \* as $protobuf|import $protobuf|' push-request.js
+sed -i.bak 's|protobufjs/minimal|protobufjs/minimal.js|' push-request.js
+rm -f push-request.js.bak
+
 npx pbts -o push-request.d.mts push-request.js
 mv -f push-request.js push-request.mjs

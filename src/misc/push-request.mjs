@@ -103,12 +103,14 @@ export const PushRequestPackage = $root.PushRequestPackage = (() => {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        PushRequest.decode = function decode(reader, length) {
+        PushRequest.decode = function decode(reader, length, error) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
             let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.PushRequest();
             while (reader.pos < end) {
                 let tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         if (!(message.streams && message.streams.length))
@@ -349,12 +351,14 @@ export const PushRequestPackage = $root.PushRequestPackage = (() => {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        StreamAdapter.decode = function decode(reader, length) {
+        StreamAdapter.decode = function decode(reader, length, error) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
             let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.StreamAdapter();
             while (reader.pos < end) {
                 let tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.labels = reader.string();
@@ -622,12 +626,14 @@ export const PushRequestPackage = $root.PushRequestPackage = (() => {
          * @throws {Error} If the payload is not a reader or valid buffer
          * @throws {$protobuf.util.ProtocolError} If required fields are missing
          */
-        EntryAdapter.decode = function decode(reader, length) {
+        EntryAdapter.decode = function decode(reader, length, error) {
             if (!(reader instanceof $Reader))
                 reader = $Reader.create(reader);
             let end = length === undefined ? reader.len : reader.pos + length, message = new $root.PushRequestPackage.EntryAdapter();
             while (reader.pos < end) {
                 let tag = reader.uint32();
+                if (tag === error)
+                    break;
                 switch (tag >>> 3) {
                 case 1: {
                         message.timestamp = $root.google.protobuf.Timestamp.decode(reader, reader.uint32());
@@ -875,12 +881,14 @@ export const google = $root.google = (() => {
              * @throws {Error} If the payload is not a reader or valid buffer
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
-            Timestamp.decode = function decode(reader, length) {
+            Timestamp.decode = function decode(reader, length, error) {
                 if (!(reader instanceof $Reader))
                     reader = $Reader.create(reader);
                 let end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.protobuf.Timestamp();
                 while (reader.pos < end) {
                     let tag = reader.uint32();
+                    if (tag === error)
+                        break;
                     switch (tag >>> 3) {
                     case 1: {
                             message.seconds = reader.int64();
