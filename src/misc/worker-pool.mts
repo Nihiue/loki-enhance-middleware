@@ -32,8 +32,14 @@ function normalizePayload(payload: Payload): Buffer | Record<string, any> | null
 }
 
 function getTransterList(msg: WorkerMessage) {
+  // Node's Buffer is a Uint8Array view that may be backed by a pooled ArrayBuffer.
+  // Transferring that ArrayBuffer can trigger DataCloneError in newer Node versions.
+  // Only transfer for non-Buffer Uint8Array payloads.
+  if (utils.isBuffer(msg.payload)) {
+    return;
+  }
   if (utils.isUint8Array(msg.payload)) {
-    return [ msg.payload.buffer ];
+    return [msg.payload.buffer];
   }
 }
 
